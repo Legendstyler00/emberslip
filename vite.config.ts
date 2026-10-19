@@ -10,7 +10,28 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter()
+			adapter: adapter(),
+			// SvelteKit adds hashes for its own inline bootstrap script.
+			csp: {
+				mode: 'hash',
+				directives: {
+					'default-src': ['self'],
+					'script-src': ['self'],
+					// The only inline style allowed is the one on SvelteKit's route announcer.
+					'style-src': [
+						'self',
+						'unsafe-hashes',
+						'sha256-S8qMpvofolR8Mpjy4kQvEm7m1q8clzU4dfDH0AmvZjo='
+					],
+					'img-src': ['self'],
+					'font-src': ['self'],
+					'connect-src': ['self'],
+					'form-action': ['self'],
+					'base-uri': ['none'],
+					'object-src': ['none'],
+					'frame-ancestors': ['none']
+				}
+			}
 		})
 	],
 	build: {

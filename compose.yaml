@@ -1,0 +1,31 @@
+services:
+  emberslip:
+    build: .
+    restart: unless-stopped
+    environment:
+      ORIGIN: https://${DOMAIN:?set DOMAIN in .env}
+      ADDRESS_HEADER: X-Forwarded-For
+      XFF_DEPTH: 1
+      IMPRINT: ${IMPRINT:-}
+      SOURCE_URL: ${SOURCE_URL:-}
+    volumes:
+      - emberslip-data:/data
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  emberslip-data:
+  caddy-data:
+  caddy-config:

@@ -8,7 +8,7 @@
 	import Logo from '#lib/components/Logo.svelte';
 	import type { LayoutProps } from './$types';
 
-	let { children }: LayoutProps = $props();
+	let { data, children }: LayoutProps = $props();
 </script>
 
 <svelte:head>
@@ -34,6 +34,12 @@
 
 	<footer>
 		<p>Notes are encrypted in your browser and burn after reading.</p>
+		<nav aria-label="About">
+			<a href={resolve('/security')}>How it works</a>
+			<a href={resolve('/privacy')}>Privacy</a>
+			<a href={resolve('/imprint')}>Imprint</a>
+			<a href={data.sourceUrl} rel="external noopener">Source code</a>
+		</nav>
 	</footer>
 </div>
 
@@ -88,9 +94,27 @@
 	}
 
 	footer {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 12px 24px;
 		border-top: 1px solid var(--border);
 		padding: 22px 0 32px;
 		color: var(--faint);
 		font-size: 14px;
+	}
+
+	footer nav {
+		gap: 16px;
+		flex-wrap: wrap;
+	}
+
+	footer a {
+		color: var(--muted);
+		text-decoration: none;
+	}
+
+	footer a:hover {
+		color: var(--text);
 	}
 </style>

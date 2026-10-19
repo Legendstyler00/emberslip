@@ -1,0 +1,8 @@
+# Caddy obtains TLS certificates automatically and negotiates the post-quantum
+# X25519MLKEM768 key exchange with browsers that support it.
+#
+# There is deliberately no `log` directive: Caddy writes no access logs without one.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy emberslip:3000
+}
