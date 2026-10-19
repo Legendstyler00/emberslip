@@ -146,6 +146,104 @@ describe('NoteStore', () => {
 		expect(row).toMatchObject({ ciphertext: null, iv: null, kdf: null, pw_hash: null });
 	});
 
+	describe('with a status link', () => {
+		const MINUTE = 60_000;
+
+		it('records open times, rounded to the minute, and nothing for notes without one', () => {
+			const db = openDatabase(':memory:');
+			const local = new NoteStore(db, limits);
+			const manageHash = hashToken(randomBytes(32));
+			const tracked = newNote({ views: 3, manageHash });
+			const untracked = newNote({ views: 3 });
+			local.create(tracked);
+			local.create(untracked);
+
+			expect(local.status(manageHash, T0)).toEqual({
+				status: 'active',
+				viewsLeft: 3,
+				expiresAt: tracked.expiresAt,
+				hasPassword: false,
+				failedAttempts: 0,
+				opens: []
+			});
+
+			local.open(tracked.id, null, T0);
+			local.open(tracked.id, null, T0 + 5 * MINUTE + 1234);
+			local.open(untracked.id, null, T0);
+			expect(local.status(manageHash, T0 + 6 * MINUTE)).toMatchObject({
+				status: 'active',
+				viewsLeft: 1,
+				opens: [Date.UTC(2026, 9, 19, 12, 0), Date.UTC(2026, 9, 19, 12, 5)]
+			});
+
+			const row = db.prepare('SELECT manage_hash, opens FROM notes WHERE id = ?').get(untracked.id);
+			expect(row).toEqual({ manage_hash: null, opens: null });
+		});
+
+		it('keeps the open times in the tombstone after the last view', () => {
+			const manageHash = hashToken(randomBytes(32));
+			const note = newNote({ manageHash });
+			store.create(note);
+			store.open(note.id, null, T0);
+			expect(store.status(manageHash, T0 + MINUTE)).toEqual({
+				status: 'burned',
+				burnedAt: Date.UTC(2026, 9, 19, 12, 0),
+				reason: 'viewed',
+				failedAttempts: 0,
+				opens: [Date.UTC(2026, 9, 19, 12, 0)]
+			});
+		});
+
+		it('lets the creator burn the note early', () => {
+			const manageHash = hashToken(randomBytes(32));
+			const note = newNote({ views: 2, manageHash });
+			store.create(note);
+
+			expect(store.burnNow(manageHash, T0 + 2 * MINUTE)).toMatchObject({
+				status: 'burned',
+				reason: 'creator',
+				burnedAt: Date.UTC(2026, 9, 19, 12, 2),
+				opens: []
+			});
+			expect(store.open(note.id, null, T0 + 3 * MINUTE)).toMatchObject({
+				status: 'burned',
+				reason: 'creator'
+			});
+			// Burning again changes nothing.
+			expect(store.burnNow(manageHash, T0 + 9 * MINUTE)).toMatchObject({
+				burnedAt: Date.UTC(2026, 9, 19, 12, 2)
+			});
+		});
+
+		it('counts wrong passwords, including the one that burns the note', () => {
+			const manageHash = hashToken(randomBytes(32));
+			const kdf = { alg: 'PBKDF2-SHA256' as const, iterations: 600_000, salt: 'A'.repeat(22) };
+			const note = newNote({ kdf, pwHash: hashToken(randomBytes(32)), manageHash });
+			store.create(note);
+			store.open(note.id, randomBytes(32), T0);
+			expect(store.status(manageHash, T0)).toMatchObject({ failedAttempts: 1, hasPassword: true });
+			for (let i = 0; i < 4; i++) store.open(note.id, randomBytes(32), T0);
+			expect(store.status(manageHash, T0)).toMatchObject({
+				status: 'burned',
+				reason: 'password',
+				failedAttempts: 5,
+				opens: []
+			});
+		});
+
+		it('reports expiry and forgets everything once the tombstone is purged', () => {
+			const manageHash = hashToken(randomBytes(32));
+			store.create(newNote({ manageHash }));
+			expect(store.status(manageHash, T0 + 2 * HOUR)).toMatchObject({
+				status: 'burned',
+				reason: 'expired'
+			});
+			store.purgeTombstones(T0 + 31 * 24 * HOUR);
+			expect(store.status(manageHash, T0 + 31 * 24 * HOUR)).toEqual({ status: 'missing' });
+			expect(store.burnNow(manageHash, T0 + 31 * 24 * HOUR)).toEqual({ status: 'missing' });
+		});
+	});
+
 	it('refuses new notes when the database is full', () => {
 		const tiny = new NoteStore(openDatabase(':memory:'), { ...limits, maxDbBytes: 1 });
 		expect(tiny.create(newNote())).toBe('full');

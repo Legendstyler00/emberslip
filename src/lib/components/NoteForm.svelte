@@ -4,13 +4,20 @@
 		views: number;
 		expiresAt: number;
 		hasPassword: boolean;
+		/** Private status link, if the creator asked for one. */
+		manageLink: string | null;
 	}
 </script>
 
 <script lang="ts">
 	import { toBase64Url } from '../crypto/bytes';
 	import { fitsInEnvelope } from '../crypto/envelope';
-	import { encryptNote, generateNoteKey } from '../crypto/note';
+	import {
+		deriveManageToken,
+		encryptNote,
+		generateManageKey,
+		generateNoteKey
+	} from '../crypto/note';
 	import { createNote } from '../client/api';
 	import Segmented from './Segmented.svelte';
 
@@ -30,6 +37,7 @@
 	let usePassword = $state(false);
 	let password = $state('');
 	let showPassword = $state(false);
+	let wantStatusLink = $state(false);
 	let busy = $state(false);
 	let error = $state<string | null>(null);
 
@@ -45,13 +53,18 @@
 		error = null;
 		try {
 			const key = generateNoteKey();
-			const payload = await encryptNote(key, text, usePassword ? password : null);
-			const created = await createNote({ ...payload, views, ttl });
+			const manageKey = wantStatusLink ? generateManageKey() : null;
+			const [payload, manageToken] = await Promise.all([
+				encryptNote(key, text, usePassword ? password : null),
+				manageKey && deriveManageToken(manageKey)
+			]);
+			const created = await createNote({ ...payload, views, ttl, manageToken });
 			oncreated({
 				link: new URL(`/n#${toBase64Url(key)}`, location.origin).href,
 				views: created.views,
 				expiresAt: created.expiresAt,
-				hasPassword: usePassword
+				hasPassword: usePassword,
+				manageLink: manageKey && new URL(`/manage#${toBase64Url(manageKey)}`, location.origin).href
 			});
 			text = '';
 			password = '';
@@ -124,6 +137,17 @@
 		{/if}
 	</div>
 
+	<div class="status-link">
+		<label class="toggle">
+			<input type="checkbox" bind:checked={wantStatusLink} aria-describedby="status-link-hint" />
+			Give me a private status link
+		</label>
+		<p id="status-link-hint" class="hint">
+			Shows when the note is opened and lets you burn it early. Open times are stored rounded to the
+			minute, and nothing about the reader is.
+		</p>
+	</div>
+
 	{#if error}
 		<p class="error" role="alert">{error}</p>
 	{/if}
@@ -150,7 +174,8 @@
 		gap: 18px;
 	}
 
-	.password {
+	.password,
+	.status-link {
 		display: grid;
 		gap: 10px;
 	}

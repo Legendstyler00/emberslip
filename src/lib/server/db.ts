@@ -37,6 +37,13 @@ const migrations = [
 	) STRICT, WITHOUT ROWID;
 	CREATE INDEX requests_expiry ON requests (expires_at) WHERE burned_at IS NULL;
 	CREATE INDEX requests_purge ON requests (purge_at) WHERE burned_at IS NOT NULL;
+	`,
+	// Opt-in status links. `opens` is a JSON array of minute-rounded times and stays NULL for
+	// notes created without a status link, so nothing extra is recorded for them.
+	`
+	ALTER TABLE notes ADD COLUMN manage_hash BLOB;
+	ALTER TABLE notes ADD COLUMN opens TEXT;
+	CREATE UNIQUE INDEX notes_manage ON notes (manage_hash) WHERE manage_hash IS NOT NULL;
 	`
 ];
 

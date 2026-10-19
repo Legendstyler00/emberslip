@@ -17,6 +17,8 @@ overwritten.
 - **Safe with link previews.** Nothing is consumed until the reader clicks _Reveal_.
 - **Tombstones.** A burned note says when and why it burned, so a recipient can tell if someone
   else opened it first.
+- **Optional status link.** A private link, with no account needed, that shows when the note was
+  opened (to the minute) and lets you burn it early. Nothing about the reader is recorded.
 - **Request a secret.** Send someone a link they can use to send a secret back to you. Answers are
   encrypted with X-Wing (ML-KEM-768 + X25519), a post-quantum hybrid.
 - **No accounts, cookies, analytics or third-party requests.** Fonts are self-hosted, and a strict

@@ -4,7 +4,7 @@ import { expect, expectNotSent, fragmentOf, readQr, test } from './fixtures';
 async function createNote(
 	page: Page,
 	text: string,
-	options: { views?: number; password?: string } = {}
+	options: { views?: number; password?: string; statusLink?: boolean } = {}
 ): Promise<string> {
 	await page.goto('/');
 	await page.getByLabel('Your secret').fill(text);
@@ -15,6 +15,7 @@ async function createNote(
 		await page.getByText('Protect with a password').click();
 		await page.getByLabel('Password', { exact: true }).fill(options.password);
 	}
+	if (options.statusLink) await page.getByLabel('Give me a private status link').check();
 	await page.getByRole('button', { name: 'Create secret link' }).click();
 	const link = await page.getByRole('textbox', { name: 'Secret link' }).inputValue();
 	expect(link).toMatch(/\/n#[A-Za-z0-9_-]{43}$/);
@@ -52,6 +53,42 @@ test('the share screen can show the link as a QR code', async ({ openPage }) => 
 
 	await page.getByRole('button', { name: 'Hide QR code' }).click();
 	await expect(qr).toHaveCount(0);
+});
+
+test('the status link shows when the note was opened and can burn it', async ({
+	openPage,
+	sent
+}) => {
+	const creator = await openPage();
+	const link = await createNote(creator, 'watch this', { views: 2, statusLink: true });
+	const manageLink = await creator.getByLabel('Status link').inputValue();
+	expect(manageLink).toMatch(/\/manage#[A-Za-z0-9_-]{43}$/);
+	expect(fragmentOf(manageLink)).not.toBe(fragmentOf(link));
+
+	const status = await openPage(manageLink);
+	await expect(
+		status.getByRole('heading', { name: "Your note hasn't been opened yet" })
+	).toBeVisible();
+
+	const reader = await openPage(link);
+	await reader.getByRole('button', { name: 'Reveal note' }).click();
+	await expect(reader.locator('#secret')).toHaveValue('watch this');
+
+	await status.getByRole('button', { name: 'Refresh' }).click();
+	await expect(status.getByRole('heading', { name: 'Your note has been opened' })).toBeVisible();
+	await expect(status.getByText('1 view left')).toBeVisible();
+
+	await status.getByRole('button', { name: 'Burn now' }).click();
+	await status.getByRole('button', { name: 'Burn it for good' }).click();
+	await expect(status.getByRole('heading', { name: 'This note has burned' })).toBeVisible();
+	await expect(status.getByText('You burned it with this link.')).toBeVisible();
+
+	const latecomer = await openPage(link);
+	await expect(
+		latecomer.getByRole('heading', { name: 'This note was burned by its sender' })
+	).toBeVisible();
+
+	expectNotSent(sent, fragmentOf(manageLink), fragmentOf(link));
 });
 
 test('opening the link without revealing uses up no view', async ({ openPage }) => {

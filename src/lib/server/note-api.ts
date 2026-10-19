@@ -1,6 +1,6 @@
 import { toBase64Url } from '../crypto/bytes';
 import { MAX_PADDED_SIZE } from '../crypto/envelope';
-import type { OpenResult, PeekResult } from './notes';
+import type { OpenResult } from './notes';
 
 /** Base64url JSON with some headroom; anything larger can't be a valid note. */
 export const MAX_REQUEST_BYTES = Math.ceil(((MAX_PADDED_SIZE + 16) * 4) / 3) + 4096;
@@ -11,7 +11,7 @@ export function isPaddedCiphertext(length: number): boolean {
 	return padded >= 1024 && padded <= MAX_PADDED_SIZE && (padded & (padded - 1)) === 0;
 }
 
-export function statusCode(result: PeekResult | OpenResult): number {
+export function statusCode(result: { status: string }): number {
 	switch (result.status) {
 		case 'missing':
 			return 404;

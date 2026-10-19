@@ -25,6 +25,10 @@
 			password itself.
 		</li>
 		<li>
+			<strong>Open times, only if you ask for a status link.</strong> When a note was opened, rounded
+			to the minute. No IP address, browser details, or anything else about the reader.
+		</li>
+		<li>
 			<strong>A tombstone</strong> once something burns: when (rounded to the minute) and why. It is deleted
 			after 30 days.
 		</li>

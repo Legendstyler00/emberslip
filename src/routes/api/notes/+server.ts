@@ -28,6 +28,8 @@ export const POST = api(async (event) => {
 	const pwToken = optionalBytesField(body, 'pwToken', 32);
 	if (!kdf !== !pwToken) throw new ApiError(400, 'kdf and pwToken must be sent together');
 
+	const manageToken = optionalBytesField(body, 'manageToken', 32);
+
 	const views = intField(body, 'views', 1, config.maxViews);
 	const ttl = intField(body, 'ttl', config.minTtlSeconds, config.maxTtlSeconds);
 	const expiresAt = Date.now() + ttl * 1000;
@@ -39,7 +41,8 @@ export const POST = api(async (event) => {
 		kdf,
 		pwHash: pwToken && hashToken(pwToken),
 		views,
-		expiresAt
+		expiresAt,
+		manageHash: manageToken && hashToken(manageToken)
 	});
 	if (result === 'full') throw new ApiError(503, 'Storage is full right now, try again later');
 	if (result === 'exists') throw new ApiError(409, 'A note with this key already exists');

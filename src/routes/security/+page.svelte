@@ -39,6 +39,16 @@
 		note burns.
 	</p>
 
+	<h2>Status links</h2>
+	<p>
+		If you ask for one, you also get a private status link. It carries its own random key, unrelated
+		to the note's key, so it can show when the note was opened and burn it early, but it can't
+		decrypt anything. You don't need an account: holding the link is enough. The server stores only
+		a hash of a token derived from it, plus the times the note was opened, rounded to the minute.
+		Nothing about the reader is recorded. Notes created without a status link don't record open
+		times at all.
+	</p>
+
 	<h2>Requesting a secret</h2>
 	<p>
 		Requests use the post-quantum hybrid key exchange X-Wing, which combines ML-KEM-768 with X25519.

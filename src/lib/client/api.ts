@@ -2,7 +2,7 @@ import type { PasswordKdf } from '../crypto/kdf';
 import type { NotePayload } from '../crypto/note';
 import type { AnswerPayload, RequestPayload } from '../crypto/request';
 
-export type BurnReason = 'viewed' | 'expired' | 'password';
+export type BurnReason = 'viewed' | 'expired' | 'password' | 'creator';
 
 export type Burned = { status: 'burned'; burnedAt: number; reason: BurnReason };
 export type Missing = { status: 'missing' };
@@ -22,6 +22,18 @@ export type OpenResponse =
 	| { status: 'ok'; iv: string; ciphertext: string; viewsLeft: number }
 	| { status: 'wrong-password'; attemptsLeft: number }
 	| Burned
+	| Missing;
+
+export type ManageResponse =
+	| {
+			status: 'active';
+			viewsLeft: number;
+			expiresAt: number;
+			hasPassword: boolean;
+			failedAttempts: number;
+			opens: number[];
+	  }
+	| (Burned & { failedAttempts: number; opens: number[] })
 	| Missing;
 
 export class ApiRequestError extends Error {
@@ -66,7 +78,7 @@ function hasStatus<T>(data: unknown): data is T {
 }
 
 export async function createNote(
-	payload: NotePayload & { views: number; ttl: number }
+	payload: NotePayload & { views: number; ttl: number; manageToken: string | null }
 ): Promise<{ expiresAt: number; views: number }> {
 	const { status, data } = await post('/api/notes', payload);
 	if (status !== 201) throw failure(status, data);
@@ -82,6 +94,18 @@ export async function peekNote(linkToken: string): Promise<PeekResponse> {
 export async function openNote(linkToken: string, pwToken: string | null): Promise<OpenResponse> {
 	const { status, data } = await post('/api/notes/open', { linkToken, pwToken });
 	if ([200, 403, 404, 410].includes(status) && hasStatus<OpenResponse>(data)) return data;
+	throw failure(status, data);
+}
+
+export async function noteStatus(manageToken: string): Promise<ManageResponse> {
+	const { status, data } = await post('/api/notes/status', { manageToken });
+	if ([200, 404, 410].includes(status) && hasStatus<ManageResponse>(data)) return data;
+	throw failure(status, data);
+}
+
+export async function burnNote(manageToken: string): Promise<ManageResponse> {
+	const { status, data } = await post('/api/notes/burn', { manageToken });
+	if ([200, 404, 410].includes(status) && hasStatus<ManageResponse>(data)) return data;
 	throw failure(status, data);
 }
 

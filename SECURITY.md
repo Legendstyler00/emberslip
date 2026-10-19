@@ -55,6 +55,21 @@ base64url-encoded.
 6. Opening a note checks expiry and password, decrements the view count, and burns the note on
    its last view, all in one transaction.
 
+### Status links
+
+Status links are opt-in. Without one, a note stores no open times.
+
+1. The browser generates a second random 32-byte key `M`, independent of `K`. The status link is
+   `/manage#base64url(M)`.
+2. `manageToken = HKDF(M, "emberslip/v1/manage")`. The server stores `SHA-256(manageToken)` with
+   the note.
+3. Each successful open appends its time, rounded down to the minute, to the note. Nothing about
+   the reader is stored.
+4. With `manageToken`, anyone can see views left, expiry, open times and the number of wrong
+   password attempts, and can burn the note. It can't decrypt the note, and the note link can't be
+   used as a status link.
+5. Open times are deleted with the tombstone.
+
 ### Requests
 
 1. The requester's browser generates a 32-byte `seed` and a 32-byte `shareSecret`. The X-Wing key

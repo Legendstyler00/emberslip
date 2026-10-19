@@ -45,9 +45,35 @@
 		</p>
 	{/if}
 
+	{#if note.manageLink}
+		<div class="manage">
+			<h3>Your private status link</h3>
+			<p class="hint">
+				Keep this one to yourself. It shows when the note was opened and lets you burn it early, but
+				it can't decrypt the note.
+			</p>
+			<div class="link-row">
+				<label class="visually-hidden" for="manage-link">Status link</label>
+				<input
+					id="manage-link"
+					class="input link"
+					readonly
+					value={note.manageLink}
+					onfocus={selectAll}
+				/>
+				<CopyButton text={note.manageLink} label="Copy" />
+			</div>
+		</div>
+	{/if}
+
 	<p class="hint">
-		This link is only shown once. Anyone who has it can open the note, and we can't recover it if it
-		gets lost.
+		{#if note.manageLink}
+			These links are only shown once, and we can't recover them if they get lost. Anyone who has
+			the secret link can open the note.
+		{:else}
+			This link is only shown once. Anyone who has it can open the note, and we can't recover it if
+			it gets lost.
+		{/if}
 	</p>
 
 	<button type="button" class="btn btn-block" onclick={onreset}>Create another note</button>
@@ -103,6 +129,21 @@
 		height: 7px;
 		border-radius: 50%;
 		background: linear-gradient(135deg, var(--ember), var(--ember-2));
+	}
+
+	.manage {
+		display: grid;
+		gap: 10px;
+		padding: 18px;
+		border: 1px solid rgb(255 122 47 / 0.45);
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
+	}
+
+	h3 {
+		font-family: var(--font-sans);
+		font-size: 16px;
+		font-weight: 650;
 	}
 
 	.notice {

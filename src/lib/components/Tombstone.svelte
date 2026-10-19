@@ -14,6 +14,10 @@
 			title: 'This note was destroyed',
 			body: 'The wrong password was entered too many times, so the note burned to protect its contents. Ask the sender for a new link.'
 		},
+		creator: {
+			title: 'This note was burned by its sender',
+			body: 'The person who sent it destroyed it early. Ask them for a new link if you still need it.'
+		},
 		missing: {
 			title: "There's nothing here",
 			body: "This doesn't exist. Either the link is wrong, or it burned so long ago that even its traces are gone."

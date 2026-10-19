@@ -3,7 +3,7 @@ import type { DatabaseSync, StatementSync } from 'node:sqlite';
 import type { PasswordKdf } from '../crypto/kdf';
 import { databaseSize, transaction } from './db';
 
-export type BurnReason = 'viewed' | 'expired' | 'password';
+export type BurnReason = 'viewed' | 'expired' | 'password' | 'creator';
 
 export interface NewNote {
 	id: Uint8Array;
@@ -13,6 +13,8 @@ export interface NewNote {
 	pwHash: Uint8Array | null;
 	views: number;
 	expiresAt: number;
+	/** Hash of the status link's token, or null if the creator didn't ask for one. */
+	manageHash?: Uint8Array | null;
 }
 
 export type Burned = { status: 'burned'; burnedAt: number; reason: BurnReason };
@@ -35,6 +37,19 @@ export type OpenResult =
 	| Burned
 	| Missing;
 
+/** What the creator's status link shows. Open times are rounded to the minute. */
+export type ManageResult =
+	| {
+			status: 'active';
+			viewsLeft: number;
+			expiresAt: number;
+			hasPassword: boolean;
+			failedAttempts: number;
+			opens: number[];
+	  }
+	| (Burned & { failedAttempts: number; opens: number[] })
+	| Missing;
+
 export interface NoteLimits {
 	maxPasswordAttempts: number;
 	tombstoneSeconds: number;
@@ -51,6 +66,7 @@ interface Row {
 	expires_at: number;
 	burned_at: number | null;
 	burn_reason: BurnReason | null;
+	opens: string | null;
 }
 
 /** Notes are looked up by the hash of a token, so the database never holds the token itself. */
@@ -58,7 +74,7 @@ export function hashToken(token: Uint8Array): Uint8Array {
 	return createHash('sha256').update(token).digest();
 }
 
-// Tombstones only need to say roughly when something burned.
+// Tombstones and status links only need to say roughly when something happened.
 export function roundToMinute(ms: number): number {
 	return Math.floor(ms / 60_000) * 60_000;
 }
@@ -70,6 +86,8 @@ export class NoteStore {
 	#select: StatementSync;
 	#burn: StatementSync;
 	#consumeView: StatementSync;
+	#recordOpen: StatementSync;
+	#selectByManage: StatementSync;
 	#failAttempt: StatementSync;
 	#burnExpired: StatementSync;
 	#purge: StatementSync;
@@ -78,12 +96,12 @@ export class NoteStore {
 		this.#db = db;
 		this.#limits = limits;
 		this.#insert = db.prepare(
-			`INSERT INTO notes (id, ciphertext, iv, kdf, pw_hash, views_left, expires_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING`
+			`INSERT INTO notes (id, ciphertext, iv, kdf, pw_hash, views_left, expires_at, manage_hash, opens)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
 		);
 		this.#select = db.prepare(
 			`SELECT ciphertext, iv, kdf, pw_hash, views_left, failed_attempts, expires_at,
-			        burned_at, burn_reason
+			        burned_at, burn_reason, opens
 			 FROM notes WHERE id = ?`
 		);
 		this.#burn = db.prepare(
@@ -92,6 +110,10 @@ export class NoteStore {
 			 WHERE id = ?`
 		);
 		this.#consumeView = db.prepare(`UPDATE notes SET views_left = views_left - 1 WHERE id = ?`);
+		this.#recordOpen = db.prepare(
+			`UPDATE notes SET opens = json_insert(opens, '$[#]', ?) WHERE id = ? AND opens IS NOT NULL`
+		);
+		this.#selectByManage = db.prepare(`SELECT id FROM notes WHERE manage_hash = ?`);
 		this.#failAttempt = db.prepare(
 			`UPDATE notes SET failed_attempts = failed_attempts + 1 WHERE id = ?`
 		);
@@ -113,7 +135,9 @@ export class NoteStore {
 			note.kdf ? JSON.stringify(note.kdf) : null,
 			note.pwHash,
 			note.views,
-			note.expiresAt
+			note.expiresAt,
+			note.manageHash ?? null,
+			note.manageHash ? '[]' : null
 		);
 		return changes === 1 ? 'created' : 'exists';
 	}
@@ -144,10 +168,10 @@ export class NoteStore {
 
 			if (row.pw_hash !== null && !(pwToken && sameBytes(hashToken(pwToken), row.pw_hash))) {
 				const attempts = row.failed_attempts + 1;
+				this.#failAttempt.run(id);
 				if (attempts >= this.#limits.maxPasswordAttempts) {
 					return this.#burnNote(id, now, 'password');
 				}
-				this.#failAttempt.run(id);
 				return {
 					status: 'wrong-password',
 					attemptsLeft: this.#limits.maxPasswordAttempts - attempts
@@ -160,10 +184,50 @@ export class NoteStore {
 				ciphertext: row.ciphertext!,
 				viewsLeft: row.views_left - 1
 			};
+			this.#recordOpen.run(roundToMinute(now), id);
 			if (result.viewsLeft === 0) this.#burnNote(id, now, 'viewed');
 			else this.#consumeView.run(id);
 			return result;
 		});
+	}
+
+	/** Looks up a note by its status link, burning it first if it has just expired. */
+	status(manageHash: Uint8Array, now = Date.now()): ManageResult {
+		return transaction(this.#db, () => {
+			const found = this.#selectByManage.get(manageHash) as { id: Uint8Array } | undefined;
+			if (!found) return { status: 'missing' };
+			return this.#manageView(found.id, now);
+		});
+	}
+
+	/** Burns a note on its creator's request. Already burned notes are left as they are. */
+	burnNow(manageHash: Uint8Array, now = Date.now()): ManageResult {
+		return transaction(this.#db, () => {
+			const found = this.#selectByManage.get(manageHash) as { id: Uint8Array } | undefined;
+			if (!found) return { status: 'missing' };
+			const current = this.#current(found.id, now);
+			if (!('status' in current)) this.#burnNote(found.id, now, 'creator');
+			return this.#manageView(found.id, now);
+		});
+	}
+
+	#manageView(id: Uint8Array, now: number): ManageResult {
+		const current = this.#current(id, now);
+		// #current may have just burned the note, so read the row again for the details.
+		const row = this.#select.get(id) as unknown as Row;
+		const details = {
+			failedAttempts: row.failed_attempts,
+			opens: JSON.parse(row.opens ?? '[]') as number[]
+		};
+		if ('status' in current)
+			return current.status === 'missing' ? current : { ...current, ...details };
+		return {
+			status: 'active',
+			viewsLeft: row.views_left,
+			expiresAt: row.expires_at,
+			hasPassword: row.pw_hash !== null,
+			...details
+		};
 	}
 
 	burnExpired(now = Date.now()): number {

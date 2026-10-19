@@ -38,6 +38,18 @@ export async function deriveLinkToken(key: Bytes): Promise<string> {
 	return toBase64Url(await hkdf(key, label('link')));
 }
 
+/**
+ * The status link carries its own random key, independent of K, so it can show a note's state
+ * and burn it but never decrypt it. The server stores only the hash of the derived token.
+ */
+export function generateManageKey(): Bytes {
+	return randomBytes(NOTE_KEY_BYTES);
+}
+
+export async function deriveManageToken(manageKey: Bytes): Promise<string> {
+	return toBase64Url(await hkdf(manageKey, label('manage')));
+}
+
 export function isAcceptableKdf(kdf: PasswordKdf): boolean {
 	return (
 		kdf.alg === 'PBKDF2-SHA256' &&
