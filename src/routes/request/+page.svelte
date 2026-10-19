@@ -5,6 +5,7 @@
 	import { toBase64Url } from '#lib/crypto/bytes.ts';
 	import { createRequest, MAX_REQUEST_MESSAGE_LENGTH } from '#lib/crypto/request.ts';
 	import CopyButton from '#lib/components/CopyButton.svelte';
+	import LinkQr from '#lib/components/LinkQr.svelte';
 	import Segmented from '#lib/components/Segmented.svelte';
 
 	const ttlOptions = [
@@ -75,6 +76,7 @@
 				/>
 				<CopyButton text={created.shareLink} label="Copy link" />
 			</div>
+			<LinkQr link={created.shareLink} label="QR code of the link to send" />
 		</div>
 
 		<div class="link-block private">

@@ -1,4 +1,5 @@
-import { test as base, expect, type Browser, type Page } from '@playwright/test';
+import { test as base, expect, type Browser, type Locator, type Page } from '@playwright/test';
+import jsQR from 'jsqr';
 
 declare global {
 	interface Window {
@@ -62,6 +63,23 @@ export function expectNotSent(sent: string[], ...secrets: string[]) {
 			`"${secret}" was sent`
 		).toEqual([]);
 	}
+}
+
+/** Decodes a QR code rendered by the QrCode component from its SVG path. */
+export async function readQr(svg: Locator): Promise<string | undefined> {
+	const viewBox = await svg.getAttribute('viewBox');
+	const path = await svg.locator('path').getAttribute('d');
+	const scale = 4;
+	const width = Number(viewBox?.split(' ')[2]) * scale;
+	const pixels = new Uint8ClampedArray(width * width * 4).fill(255);
+	for (const [, x, y, run] of (path ?? '').matchAll(/M(\d+) (\d+)h(\d+)v1h-\d+z/g)) {
+		for (let row = Number(y) * scale; row < (Number(y) + 1) * scale; row++) {
+			for (let col = Number(x) * scale; col < (Number(x) + Number(run)) * scale; col++) {
+				pixels.fill(0, (row * width + col) * 4, (row * width + col) * 4 + 3);
+			}
+		}
+	}
+	return jsQR(pixels, width, width)?.data;
 }
 
 export { expect };

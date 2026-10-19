@@ -1,4 +1,4 @@
-import { expect, expectNotSent, fragmentOf, test } from './fixtures';
+import { expect, expectNotSent, fragmentOf, readQr, test } from './fixtures';
 
 test('someone can answer a request and only the requester can read it', async ({
 	openPage,
@@ -9,6 +9,11 @@ test('someone can answer a request and only the requester can read it', async ({
 	await requester.getByRole('button', { name: 'Create request' }).click();
 	const shareLink = await requester.getByLabel('Link to send').inputValue();
 	const inboxLink = await requester.getByLabel('Your private inbox link').inputValue();
+
+	await requester.getByRole('button', { name: 'Show QR code' }).click();
+	expect(await readQr(requester.getByRole('img', { name: 'QR code of the link to send' }))).toBe(
+		shareLink
+	);
 
 	const inbox = await openPage(inboxLink);
 	await expect(inbox.getByRole('heading', { name: 'Waiting for an answer' })).toBeVisible();

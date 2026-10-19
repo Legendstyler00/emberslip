@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, expectNotSent, fragmentOf, test } from './fixtures';
+import { expect, expectNotSent, fragmentOf, readQr, test } from './fixtures';
 
 async function createNote(
 	page: Page,
@@ -38,6 +38,20 @@ test('a note can be read once and then shows a tombstone', async ({ openPage, se
 	).toBeVisible();
 
 	expectNotSent(sent, text, fragmentOf(link));
+});
+
+test('the share screen can show the link as a QR code', async ({ openPage }) => {
+	const page = await openPage();
+	const link = await createNote(page, 'scan me');
+	const qr = page.getByRole('img', { name: 'QR code of the secret link' });
+	await expect(qr).toHaveCount(0);
+
+	await page.getByRole('button', { name: 'Show QR code' }).click();
+	await expect(qr).toBeVisible();
+	expect(await readQr(qr)).toBe(link);
+
+	await page.getByRole('button', { name: 'Hide QR code' }).click();
+	await expect(qr).toHaveCount(0);
 });
 
 test('opening the link without revealing uses up no view', async ({ openPage }) => {

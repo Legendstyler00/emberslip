@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { formatDate, formatRelative, plural } from '../client/format';
 	import CopyButton from './CopyButton.svelte';
+	import LinkQr from './LinkQr.svelte';
 	import type { CreatedNote } from './NoteForm.svelte';
 
 	let { note, onreset }: { note: CreatedNote; onreset: () => void } = $props();
@@ -21,6 +22,8 @@
 		<input id="link" class="input link" readonly value={note.link} onfocus={selectAll} />
 		<CopyButton text={note.link} label="Copy link" />
 	</div>
+
+	<LinkQr link={note.link} label="QR code of the secret link" />
 
 	<ul class="facts">
 		<li>
