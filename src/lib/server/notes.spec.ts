@@ -1,6 +1,9 @@
 import { randomBytes as nodeRandomBytes } from 'node:crypto';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { openDatabase } from './db';
+import { checkpoint, openDatabase } from './db';
 import { hashToken, NoteStore, type NewNote } from './notes';
 
 const limits = { maxPasswordAttempts: 5, tombstoneSeconds: 30 * 86400, maxDbBytes: 1024 ** 3 };
@@ -146,5 +149,29 @@ describe('NoteStore', () => {
 	it('refuses new notes when the database is full', () => {
 		const tiny = new NoteStore(openDatabase(':memory:'), { ...limits, maxDbBytes: 1 });
 		expect(tiny.create(newNote())).toBe('full');
+	});
+
+	it('leaves no trace of burned ciphertext in the database files', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'emberslip-'));
+		try {
+			const path = join(dir, 'notes.db');
+			const db = openDatabase(path);
+			const local = new NoteStore(db, limits);
+			const marker = new TextEncoder().encode('EMBERSLIP-MARKER-'.repeat(64));
+			const note = newNote({ ciphertext: marker });
+			local.create(note);
+			checkpoint(db);
+			const contains = (file: string) =>
+				Buffer.from(readFileSync(file)).includes(Buffer.from(marker.slice(0, 64)));
+			expect(contains(path)).toBe(true);
+
+			local.open(note.id, null, T0);
+			checkpoint(db);
+			expect(contains(path)).toBe(false);
+			expect(readFileSync(`${path}-wal`)).toHaveLength(0);
+			db.close();
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 });
