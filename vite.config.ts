@@ -13,6 +13,10 @@ export default defineConfig({
 			adapter: adapter()
 		})
 	],
+	build: {
+		// Inlined data: URLs would need a looser Content-Security-Policy.
+		assetsInlineLimit: 0
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
