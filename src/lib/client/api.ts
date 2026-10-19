@@ -1,5 +1,6 @@
 import type { PasswordKdf } from '../crypto/kdf';
 import type { NotePayload } from '../crypto/note';
+import type { AnswerPayload, RequestPayload } from '../crypto/request';
 
 export type BurnReason = 'viewed' | 'expired' | 'password';
 
@@ -82,4 +83,52 @@ export async function openNote(linkToken: string, pwToken: string | null): Promi
 	const { status, data } = await post('/api/notes/open', { linkToken, pwToken });
 	if ([200, 403, 404, 410].includes(status) && hasStatus<OpenResponse>(data)) return data;
 	throw failure(status, data);
+}
+
+export type RespondResponse =
+	| { status: 'open'; sealedIv: string; sealed: string; expiresAt: number }
+	| { status: 'answered' }
+	| { status: 'expired' }
+	| Missing;
+
+export type InboxResponse =
+	| { status: 'waiting'; expiresAt: number }
+	| { status: 'answered'; answeredAt: number; expiresAt: number }
+	| { status: 'burned'; burnedAt: number; reason: 'viewed' | 'expired' }
+	| Missing;
+
+export type OpenAnswerResponse =
+	({ status: 'ok' } & AnswerPayload) | Exclude<InboxResponse, { status: 'answered' }>;
+
+async function postExpecting<T>(path: string, body: unknown, accepted: number[]): Promise<T> {
+	const { status, data } = await post(path, body);
+	if (accepted.includes(status) && hasStatus<T>(data)) return data;
+	throw failure(status, data);
+}
+
+export async function createSecretRequest(
+	payload: RequestPayload & { ttl: number }
+): Promise<{ expiresAt: number }> {
+	const { status, data } = await post('/api/requests', payload);
+	if (status !== 201) throw failure(status, data);
+	return data as { expiresAt: number };
+}
+
+export function peekRequest(respondToken: string): Promise<RespondResponse> {
+	return postExpecting('/api/requests/peek', { respondToken }, [200, 404, 409, 410]);
+}
+
+export async function sendAnswer(
+	respondToken: string,
+	answer: AnswerPayload
+): Promise<{ status: 'sent' | 'answered' | 'expired' | 'missing' }> {
+	return postExpecting('/api/requests/fulfill', { respondToken, ...answer }, [201, 404, 409, 410]);
+}
+
+export function checkInbox(inboxToken: string): Promise<InboxResponse> {
+	return postExpecting('/api/requests/inbox', { inboxToken }, [200, 404, 410]);
+}
+
+export function openAnswer(inboxToken: string): Promise<OpenAnswerResponse> {
+	return postExpecting('/api/requests/open', { inboxToken }, [200, 404, 410]);
 }

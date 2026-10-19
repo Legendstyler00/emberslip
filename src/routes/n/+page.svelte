@@ -2,14 +2,9 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import {
-		ApiRequestError,
-		openNote,
-		peekNote,
-		type BurnReason,
-		type PeekResponse
-	} from '#lib/client/api.ts';
+	import { openNote, peekNote, type BurnReason, type PeekResponse } from '#lib/client/api.ts';
 	import { formatDate, formatRelative, plural } from '#lib/client/format.ts';
+	import { errorMessage, watchFragment } from '#lib/client/fragment.ts';
 	import type { Bytes } from '#lib/crypto/bytes.ts';
 	import {
 		decryptNote,
@@ -17,10 +12,10 @@
 		deriveNoteSecrets,
 		parseNoteKey
 	} from '#lib/crypto/note.ts';
-	import CopyButton from '#lib/components/CopyButton.svelte';
-	import EmberBurn from '#lib/components/EmberBurn.svelte';
 	import Logo from '#lib/components/Logo.svelte';
-	import Tombstone from '#lib/components/Tombstone.svelte';
+	import RevealedSecret from '#lib/components/RevealedSecret.svelte';
+	import StatusCard from '#lib/components/StatusCard.svelte';
+	import Tombstone, { noteTombstones } from '#lib/components/Tombstone.svelte';
 
 	type Active = Extract<PeekResponse, { status: 'active' }>;
 	type View =
@@ -40,24 +35,11 @@
 	let key: Bytes | null = null;
 	let linkToken = '';
 
-	onMount(() => {
-		start();
-
-		// Don't leave the plaintext around for the back/forward cache.
-		const clear = () => {
+	onMount(() =>
+		watchFragment(start, () => {
 			if (view.kind === 'revealed') view = { kind: 'closed' };
-		};
-		// Pasting another link into this tab only changes the fragment.
-		const restart = () => {
-			if (location.hash) start();
-		};
-		window.addEventListener('pagehide', clear);
-		window.addEventListener('hashchange', restart);
-		return () => {
-			window.removeEventListener('pagehide', clear);
-			window.removeEventListener('hashchange', restart);
-		};
-	});
+		})
+	);
 
 	function start() {
 		password = '';
@@ -79,7 +61,7 @@
 			else if (note.status === 'burned') view = { kind: 'gone', ...note };
 			else view = { kind: 'gone', burnedAt: null, reason: 'missing' };
 		} catch (err) {
-			view = { kind: 'error', message: message(err) };
+			view = { kind: 'error', message: errorMessage(err) };
 		}
 	}
 
@@ -117,16 +99,10 @@
 					view = { kind: 'gone', burnedAt: null, reason: 'missing' };
 			}
 		} catch (err) {
-			passwordError = message(err);
+			passwordError = errorMessage(err);
 		} finally {
 			busy = false;
 		}
-	}
-
-	function message(err: unknown): string {
-		return err instanceof ApiRequestError || err instanceof Error
-			? err.message
-			: 'Something went wrong. Please try again.';
 	}
 </script>
 
@@ -135,19 +111,17 @@
 </svelte:head>
 
 {#if view.kind === 'loading'}
-	<div class="card center" aria-busy="true">
-		<span class="spinner" aria-hidden="true"></span>
+	<StatusCard loading>
 		<p class="hint">Looking for your note…</p>
-	</div>
+	</StatusCard>
 {:else if view.kind === 'invalid'}
-	<section class="card center">
-		<h1>This link is incomplete</h1>
+	<StatusCard title="This link is incomplete">
 		<p class="hint">
 			The part after the <code>#</code> is missing or damaged. Make sure you copied the whole link.
 		</p>
-	</section>
+	</StatusCard>
 {:else if view.kind === 'gone'}
-	<Tombstone burnedAt={view.burnedAt} reason={view.reason} />
+	<Tombstone burnedAt={view.burnedAt} {...noteTombstones[view.reason]} />
 {:else if view.kind === 'ready'}
 	{@const note = view.note}
 	<form class="card ready" onsubmit={reveal}>
@@ -165,7 +139,7 @@
 		</div>
 
 		{#if note.hasPassword}
-			<div class="password">
+			<div>
 				<label class="label" for="password">This note is protected by a password</label>
 				<input
 					id="password"
@@ -200,50 +174,26 @@
 		</p>
 	</form>
 {:else if view.kind === 'revealed'}
-	<section class="card revealed" class:burned={view.viewsLeft === 0} aria-labelledby="note-title">
+	<RevealedSecret text={view.text} burned={view.viewsLeft === 0}>
 		{#if view.viewsLeft === 0}
-			<EmberBurn />
-		{/if}
-		<div class="revealed-head">
-			<h1 id="note-title">Your secret</h1>
-			<CopyButton text={view.text} clearAfter={60} />
-		</div>
-		<label class="visually-hidden" for="secret">Secret note</label>
-		<textarea id="secret" class="textarea" readonly rows="8" value={view.text}></textarea>
-		{#if view.viewsLeft === 0}
-			<p class="status">
-				This note has now burned. Copy what you need before you leave this page. Once you close it,
-				the note is gone.
-			</p>
+			This note has now burned. Copy what you need before you leave this page. Once you close it,
+			the note is gone.
 		{:else}
-			<p class="status">
-				It can be opened {plural(view.viewsLeft, 'more time', 'more times')} before it burns.
-			</p>
+			It can be opened {plural(view.viewsLeft, 'more time', 'more times')} before it burns.
 		{/if}
-		<p class="hint">Copied text is removed from your clipboard after 60 seconds.</p>
-	</section>
+	</RevealedSecret>
 {:else if view.kind === 'closed'}
-	<section class="card center">
-		<h1>The note was cleared</h1>
+	<StatusCard title="The note was cleared">
 		<p class="hint">You left the page, so the decrypted note was removed from it.</p>
-	</section>
+	</StatusCard>
 {:else}
-	<section class="card center">
-		<h1>Something went wrong</h1>
+	<StatusCard title="Something went wrong">
 		<p class="error" role="alert">{view.message}</p>
 		<button type="button" class="btn" onclick={() => location.reload()}>Try again</button>
-	</section>
+	</StatusCard>
 {/if}
 
 <style>
-	.center {
-		display: grid;
-		justify-items: center;
-		gap: 14px;
-		text-align: center;
-		padding-block: 36px;
-	}
-
 	h1 {
 		font-size: 28px;
 	}
@@ -261,38 +211,5 @@
 	.ready-text {
 		display: grid;
 		gap: 8px;
-	}
-
-	.revealed {
-		position: relative;
-		display: grid;
-		gap: 16px;
-	}
-
-	.revealed.burned {
-		animation: smoulder 2.8s ease-out;
-	}
-
-	@keyframes smoulder {
-		0% {
-			border-color: var(--ember);
-			box-shadow:
-				0 0 0 1px var(--ember),
-				0 0 40px -6px var(--ember);
-		}
-		100% {
-			border-color: var(--border);
-		}
-	}
-
-	.revealed-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
-
-	.status {
-		font-size: 15px;
 	}
 </style>

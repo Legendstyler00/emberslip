@@ -24,6 +24,7 @@
 		</a>
 		<nav aria-label="Main">
 			<a href={resolve('/')}>New note</a>
+			<a href={resolve('/request')}>Request a secret</a>
 		</nav>
 	</header>
 

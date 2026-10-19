@@ -19,6 +19,24 @@ const migrations = [
 	) STRICT, WITHOUT ROWID;
 	CREATE INDEX notes_expiry ON notes (expires_at) WHERE burned_at IS NULL;
 	CREATE INDEX notes_purge ON notes (purge_at) WHERE burned_at IS NOT NULL;
+	`,
+	`
+	CREATE TABLE requests (
+		id BLOB PRIMARY KEY,
+		inbox_id BLOB NOT NULL UNIQUE,
+		sealed_iv BLOB,
+		sealed BLOB,
+		kem_ciphertext BLOB,
+		answer_iv BLOB,
+		answer BLOB,
+		expires_at INTEGER NOT NULL,
+		answered_at INTEGER,
+		burned_at INTEGER,
+		burn_reason TEXT,
+		purge_at INTEGER
+	) STRICT, WITHOUT ROWID;
+	CREATE INDEX requests_expiry ON requests (expires_at) WHERE burned_at IS NULL;
+	CREATE INDEX requests_purge ON requests (purge_at) WHERE burned_at IS NOT NULL;
 	`
 ];
 

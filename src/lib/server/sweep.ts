@@ -1,11 +1,12 @@
 import { config } from './config';
 import { checkpoint } from './db';
-import { database, limits, noteStore } from './services';
+import { database, limits, noteStore, requestStore } from './services';
 
 export function sweep(now = Date.now()) {
-	const store = noteStore();
-	store.burnExpired(now);
-	store.purgeTombstones(now);
+	for (const store of [noteStore(), requestStore()]) {
+		store.burnExpired(now);
+		store.purgeTombstones(now);
+	}
 	checkpoint(database());
 	for (const limiter of Object.values(limits)) limiter.prune(now);
 }

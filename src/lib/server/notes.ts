@@ -58,8 +58,8 @@ export function hashToken(token: Uint8Array): Uint8Array {
 	return createHash('sha256').update(token).digest();
 }
 
-// Tombstones only need to say roughly when a note burned.
-function roundToMinute(ms: number): number {
+// Tombstones only need to say roughly when something burned.
+export function roundToMinute(ms: number): number {
 	return Math.floor(ms / 60_000) * 60_000;
 }
 

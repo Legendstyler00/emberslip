@@ -1,12 +1,7 @@
-<script lang="ts">
-	import { resolve } from '$app/paths';
+<script lang="ts" module>
 	import type { BurnReason } from '../client/api';
-	import { formatDate } from '../client/format';
-	import Logo from './Logo.svelte';
 
-	let { burnedAt, reason }: { burnedAt: number | null; reason: BurnReason | 'missing' } = $props();
-
-	const copy: Record<BurnReason | 'missing', { title: string; body: string }> = {
+	export const noteTombstones: Record<BurnReason | 'missing', { title: string; body: string }> = {
 		viewed: {
 			title: 'This note has already burned',
 			body: "It was opened and then destroyed. If you didn't open it yourself, someone else got to the link first. Let the sender know so they can change the secret."
@@ -21,20 +16,30 @@
 		},
 		missing: {
 			title: "There's nothing here",
-			body: "This note doesn't exist. Either the link is wrong, or the note burned so long ago that even its traces are gone."
+			body: "This doesn't exist. Either the link is wrong, or it burned so long ago that even its traces are gone."
 		}
 	};
+</script>
 
-	const text = $derived(copy[reason]);
+<script lang="ts">
+	import { resolve } from '$app/paths';
+	import { formatDate } from '../client/format';
+	import Logo from './Logo.svelte';
+
+	let {
+		title,
+		body,
+		burnedAt = null
+	}: { title: string; body: string; burnedAt?: number | null } = $props();
 </script>
 
 <section class="card tombstone" aria-labelledby="tombstone-title">
 	<Logo size={40} lit={false} />
-	<h1 id="tombstone-title">{text.title}</h1>
+	<h1 id="tombstone-title">{title}</h1>
 	{#if burnedAt !== null}
 		<p class="when">Burned {formatDate(burnedAt)}</p>
 	{/if}
-	<p class="body">{text.body}</p>
+	<p class="body">{body}</p>
 	<a class="btn" href={resolve('/')}>Create a note of your own</a>
 </section>
 
