@@ -22,9 +22,11 @@
 	--radius-sm: 10px;
 	--shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 20px 50px -20px rgb(0 0 0 / 0.6);
 
-	--font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-	--font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
-	--font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+	--font-sans: 'Bricolage Grotesque Variable', 'Arial Nova', 'Segoe UI', system-ui, sans-serif;
+	--font-display: var(--font-sans);
+	--font-mono:
+		'Martian Mono Variable', 'Cascadia Mono', 'JetBrains Mono', ui-monospace, Menlo, Consolas,
+		monospace;
 }
 
 @media (prefers-color-scheme: light) {

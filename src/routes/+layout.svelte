@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import '@fontsource-variable/inter';
-	import '@fontsource-variable/fraunces';
-	import '@fontsource-variable/jetbrains-mono';
+	import '@fontsource-variable/bricolage-grotesque/opsz.css';
+	import '@fontsource-variable/martian-mono/wdth.css';
 	import '../app.css';
 	import favicon from '#lib/assets/favicon.svg';
 	import Logo from '#lib/components/Logo.svelte';
