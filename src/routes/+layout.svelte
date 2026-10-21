@@ -4,6 +4,7 @@
 	import '@fontsource-variable/martian-mono/wdth.css';
 	import '../app.css';
 	import favicon from '#lib/assets/favicon.svg';
+	import DisplayControls from '#lib/components/DisplayControls.svelte';
 	import Logo from '#lib/components/Logo.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -12,7 +13,6 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<meta name="theme-color" content="#13100e" />
 </svelte:head>
 
 <div class="shell">
@@ -25,6 +25,7 @@
 			<a href={resolve('/')}>New note</a>
 			<a href={resolve('/request')}>Request a secret</a>
 		</nav>
+		<div class="tools"><DisplayControls /></div>
 	</header>
 
 	<main>
