@@ -8,9 +8,10 @@
 	import type { Bytes } from '#lib/crypto/bytes.ts';
 	import { KEM_SEED_BYTES } from '#lib/crypto/kem.ts';
 	import { decryptAnswer, deriveInboxToken, parseSecret } from '#lib/crypto/request.ts';
-	import Logo from '#lib/components/Logo.svelte';
+	import Gouda from '#lib/components/Gouda.svelte';
 	import RevealedSecret from '#lib/components/RevealedSecret.svelte';
 	import StatusCard from '#lib/components/StatusCard.svelte';
+	import Terminal from '#lib/components/Terminal.svelte';
 	import Tombstone from '#lib/components/Tombstone.svelte';
 
 	const POLL_MS = 15_000;
@@ -102,116 +103,126 @@
 	<title>Your inbox · Emberslip</title>
 </svelte:head>
 
-{#if view.kind === 'loading'}
-	<StatusCard loading>
-		<p class="hint">Checking your inbox…</p>
-	</StatusCard>
-{:else if view.kind === 'invalid'}
-	<StatusCard title="This link is incomplete">
-		<p class="hint">
-			The part after the <code>#</code> is missing or damaged. Make sure you copied the whole link.
-		</p>
-	</StatusCard>
-{:else if view.kind === 'waiting'}
-	<StatusCard title="Waiting for an answer">
-		<div class="pulse"><Logo size={44} /></div>
-		<p class="hint">
-			Nobody has answered yet. This page checks every 15 seconds, or you can close it and come back
-			with the same link. The request expires {formatRelative(view.expiresAt)} ({formatDate(
-				view.expiresAt
-			)}).
-		</p>
-	</StatusCard>
-{:else if view.kind === 'answered'}
-	<section class="card answered">
-		<Logo size={44} />
-		<div class="heading">
-			<h1>Your answer has arrived</h1>
-			<p class="hint">
-				Answered {formatDate(view.answeredAt)}. It burns as soon as you reveal it. If you don't read
-				it, it expires {formatRelative(view.expiresAt)}.
-			</p>
-		</div>
-		{#if error}
-			<p class="error" role="alert">{error}</p>
+<section class="rt-section">
+	{#if view.kind === 'burned'}
+		{#if view.reason === 'viewed'}
+			<Tombstone
+				burnedAt={view.burnedAt}
+				title="This answer has already been read"
+				body="It was revealed and then destroyed. If that wasn't you, someone else has your inbox link."
+			/>
+		{:else}
+			<Tombstone
+				burnedAt={view.burnedAt}
+				title="This request has expired"
+				body="Either nobody answered in time, or the answer wasn't read in time. Create a new request if you still need the secret."
+				quip="Too late! It went stale like old cheese."
+			/>
 		{/if}
-		<button type="button" class="btn btn-primary btn-block" disabled={busy} onclick={reveal}>
-			{#if busy}
-				<span class="spinner" aria-hidden="true"></span>
-				Decrypting…
-			{:else}
-				Reveal answer
-			{/if}
-		</button>
-		<p class="hint">Make sure nobody is looking at your screen.</p>
-	</section>
-{:else if view.kind === 'revealed'}
-	<RevealedSecret title="Your answer" text={view.text} burned>
-		The answer has now burned. Copy what you need before you leave this page.
-	</RevealedSecret>
-{:else if view.kind === 'burned'}
-	{#if view.reason === 'viewed'}
+	{:else if view.kind === 'missing'}
 		<Tombstone
-			burnedAt={view.burnedAt}
-			title="This answer has already been read"
-			body="It was revealed and then destroyed. If that wasn't you, someone else has your inbox link."
+			title="There's nothing here"
+			body="This inbox doesn't exist. Either the link is wrong, or it expired long ago."
 		/>
 	{:else}
-		<Tombstone
-			burnedAt={view.burnedAt}
-			title="This request has expired"
-			body="Either nobody answered in time, or the answer wasn't read in time. Create a new request if you still need the secret."
-		/>
+		<div class="rt-split rt-split--top">
+			{#if view.kind === 'loading'}
+				<StatusCard loading>
+					<p class="hint">Checking your inbox…</p>
+				</StatusCard>
+			{:else if view.kind === 'invalid'}
+				<StatusCard title="This link is incomplete">
+					<p class="hint">
+						The part after the <code>#</code> is missing or damaged. Make sure you copied the whole link.
+					</p>
+				</StatusCard>
+				<Gouda mood="panik">Half a link is like half a cheese. Nobody wants that.</Gouda>
+			{:else if view.kind === 'waiting'}
+				<StatusCard title="Waiting for an answer">
+					<Terminal
+						lines={[
+							{ text: 'watch ./inbox' },
+							{ kind: 'comment', text: 'nothing yet, still looking' }
+						]}
+						cursor
+					/>
+					<p class="hint">
+						Nobody has answered yet. This page checks every 15 seconds, or you can close it and come
+						back with the same link. The request expires {formatRelative(view.expiresAt)} ({formatDate(
+							view.expiresAt
+						)}).
+					</p>
+				</StatusCard>
+				<Gouda mood="frech">I'm on watch. Cheese break included.</Gouda>
+			{:else if view.kind === 'answered'}
+				<section class="rt-panel answered">
+					<div class="rt-section-head">
+						<p class="label kicker">Inbox</p>
+						<h1 class="h2">Your answer has arrived</h1>
+						<p class="hint">
+							Answered {formatDate(view.answeredAt)}. It burns as soon as you reveal it. If you
+							don't read it, it expires {formatRelative(view.expiresAt)}.
+						</p>
+					</div>
+					{#if error}
+						<p class="error" role="alert">{error}</p>
+					{/if}
+					<div class="submit">
+						<button
+							type="button"
+							class="rt-btn rt-btn--primary rt-btn--md rt-btn--block rt-glitch"
+							data-text="Reveal answer"
+							disabled={busy}
+							onclick={reveal}
+						>
+							{#if busy}
+								<span class="busy-cursor" aria-hidden="true"></span>
+								Decrypting…
+							{:else}
+								Reveal answer
+							{/if}
+						</button>
+						<p class="hint">Make sure nobody is looking at your screen.</p>
+					</div>
+				</section>
+				<Gouda mood="zufrieden">Fresh delivery, still sealed. I only sniffed the envelope.</Gouda>
+			{:else if view.kind === 'revealed'}
+				<RevealedSecret title="Your answer" text={view.text} burned>
+					The answer has now burned. Copy what you need before you leave this page.
+				</RevealedSecret>
+				<Gouda mood="panik">It's going up in flames! Grab what you need, quick.</Gouda>
+			{:else if view.kind === 'closed'}
+				<StatusCard title="The answer was cleared">
+					<p class="hint">You left the page, so the decrypted answer was removed from it.</p>
+				</StatusCard>
+				<Gouda mood="zufrieden">Swept clean. Not a crumb left on the screen.</Gouda>
+			{:else}
+				<StatusCard title="Something went wrong">
+					<p class="error" role="alert">{view.message}</p>
+					<button
+						type="button"
+						class="rt-btn rt-btn--secondary rt-btn--md"
+						onclick={() => location.reload()}>Try again</button
+					>
+				</StatusCard>
+				<Gouda mood="panik">That wasn't me. Probably.</Gouda>
+			{/if}
+		</div>
 	{/if}
-{:else if view.kind === 'missing'}
-	<Tombstone
-		title="There's nothing here"
-		body="This inbox doesn't exist. Either the link is wrong, or it expired long ago."
-	/>
-{:else if view.kind === 'closed'}
-	<StatusCard title="The answer was cleared">
-		<p class="hint">You left the page, so the decrypted answer was removed from it.</p>
-	</StatusCard>
-{:else}
-	<StatusCard title="Something went wrong">
-		<p class="error" role="alert">{view.message}</p>
-		<button type="button" class="btn" onclick={() => location.reload()}>Try again</button>
-	</StatusCard>
-{/if}
+</section>
 
 <style>
-	h1 {
-		font-size: 28px;
-	}
-
-	code {
-		font-family: var(--font-mono);
-		color: var(--ember-text);
+	.kicker {
+		color: var(--slime);
 	}
 
 	.answered {
+		gap: var(--space-6);
+	}
+
+	.submit {
 		display: grid;
-		gap: 20px;
-	}
-
-	.heading {
-		display: grid;
-		gap: 8px;
-	}
-
-	.pulse {
-		animation: flicker 2.4s ease-in-out infinite;
-	}
-
-	@keyframes flicker {
-		0%,
-		100% {
-			opacity: 0.55;
-			transform: scale(0.96);
-		}
-		50% {
-			opacity: 1;
-			transform: scale(1);
-		}
+		gap: var(--space-3);
+		text-align: center;
 	}
 </style>
