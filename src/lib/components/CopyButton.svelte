@@ -2,12 +2,15 @@
 	let {
 		text,
 		label = 'Copy',
-		clearAfter = 0
+		clearAfter = 0,
+		primary = false
 	}: {
 		text: string;
 		label?: string;
 		/** Seconds after which the clipboard is overwritten again. 0 keeps it. */
 		clearAfter?: number;
+		/** The main action of its view, drawn as a filled button. */
+		primary?: boolean;
 	} = $props();
 
 	let copied = $state(false);
@@ -37,7 +40,13 @@
 	}
 </script>
 
-<button type="button" class="btn" onclick={copy}>
+<button
+	type="button"
+	class="rt-btn rt-btn--md copy"
+	class:rt-btn--primary={primary}
+	class:rt-btn--secondary={!primary}
+	onclick={copy}
+>
 	{#if copied}
 		<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
 			<path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="1.8" />
@@ -72,3 +81,9 @@
 			? 'Copying failed, select the text and copy it manually'
 			: ''}
 </span>
+
+<style>
+	.copy {
+		flex: none;
+	}
+</style>

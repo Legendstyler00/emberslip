@@ -13,7 +13,7 @@
 </script>
 
 <fieldset>
-	<legend class="label">{legend}</legend>
+	<legend class="label field-label">{legend}</legend>
 	<div class="options">
 		{#each options as option (option.value)}
 			<label class:selected={option.value === value}>
@@ -32,43 +32,42 @@
 		min-width: 0;
 	}
 
+	/* The ratte.lol segmented control, with native radios underneath. */
 	.options {
-		display: flex;
+		display: inline-flex;
 		flex-wrap: wrap;
-		gap: 6px;
+		gap: 2px;
+		padding: 2px;
+		background: var(--surface-sunken);
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius-sm);
 	}
 
 	label {
 		position: relative;
 		display: inline-flex;
 		align-items: center;
-		min-height: 38px;
-		padding: 0 13px;
-		border: 1px solid var(--border-strong);
-		border-radius: 999px;
-		color: var(--muted);
-		font-size: 14px;
-		font-weight: 550;
+		min-height: 36px;
+		padding: 0 var(--space-3);
+		border-radius: 2px;
+		color: var(--ink-muted);
+		font: var(--type-label);
+		letter-spacing: var(--type-label-tracking);
+		text-transform: uppercase;
 		cursor: pointer;
-		transition:
-			color 0.15s,
-			border-color 0.15s,
-			background 0.15s;
 	}
 
 	label:hover {
-		color: var(--text);
+		color: var(--ink);
 	}
 
 	label.selected {
-		color: var(--text);
-		border-color: var(--ember);
-		background: rgb(255 122 47 / 0.12);
+		background: var(--slime);
+		color: var(--on-slime);
 	}
 
 	label:has(input:focus-visible) {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
+		box-shadow: var(--focus-ring);
 	}
 
 	input {

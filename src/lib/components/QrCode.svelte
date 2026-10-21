@@ -36,8 +36,11 @@
 </svg>
 
 <style>
-	/* Scanners expect dark modules on a light background, whatever the theme. */
+	/* Scanners expect dark modules on a light background, whatever the theme. The code sits above
+	   the CRT overlay so no scanlines run across it. */
 	.qr {
+		position: relative;
+		z-index: 51;
 		display: block;
 		width: 100%;
 		max-width: 240px;
@@ -45,6 +48,6 @@
 		background: #fff;
 		fill: #000;
 		border-radius: var(--radius-sm);
-		box-shadow: 0 0 0 1px var(--border);
+		box-shadow: 0 0 0 1px var(--line);
 	}
 </style>
