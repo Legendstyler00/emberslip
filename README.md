@@ -22,7 +22,8 @@ overwritten.
 - **Request a secret.** Send someone a link they can use to send a secret back to you. Answers are
   encrypted with X-Wing (ML-KEM-768 + X25519), a post-quantum hybrid.
 - **No accounts, cookies, analytics or third-party requests.** Fonts are self-hosted, and a strict
-  Content Security Policy is in place.
+  Content Security Policy is in place. The only thing kept in your browser is the display mode and
+  CRT effect you pick with the switches, and only once you use them.
 
 See [SECURITY.md](SECURITY.md) for the protocol and threat model.
 
@@ -86,7 +87,16 @@ npx playwright install chromium   # once
 npm run test:e2e                  # end-to-end tests against a production build
 ```
 
+## Design
+
+Emberslip wears the look of [ratte.lol](https://ratte.lol): a dark "sewer" mode and a light
+"daylight" mode, an optional CRT effect, and Gouda, the gamer rat, who comments from the side. The
+typefaces are [Bricolage Grotesque](https://github.com/ateliertriay/bricolage) and
+[Martian Mono](https://github.com/evilmartians/mono), both under the SIL Open Font License 1.1.
+
 ## License
 
 [AGPL-3.0](LICENSE). If you run a modified version for others, you have to offer them its
 source code.
+
+The Gouda artwork is © Jan-Lucas Haberstroh.
