@@ -12,7 +12,7 @@
 		deriveNoteSecrets,
 		parseNoteKey
 	} from '#lib/crypto/note.ts';
-	import Logo from '#lib/components/Logo.svelte';
+	import Gouda from '#lib/components/Gouda.svelte';
 	import RevealedSecret from '#lib/components/RevealedSecret.svelte';
 	import StatusCard from '#lib/components/StatusCard.svelte';
 	import Tombstone, { noteTombstones } from '#lib/components/Tombstone.svelte';
@@ -110,106 +110,117 @@
 	<title>A secret note for you · Emberslip</title>
 </svelte:head>
 
-{#if view.kind === 'loading'}
-	<StatusCard loading>
-		<p class="hint">Looking for your note…</p>
-	</StatusCard>
-{:else if view.kind === 'invalid'}
-	<StatusCard title="This link is incomplete">
-		<p class="hint">
-			The part after the <code>#</code> is missing or damaged. Make sure you copied the whole link.
-		</p>
-	</StatusCard>
-{:else if view.kind === 'gone'}
-	<Tombstone burnedAt={view.burnedAt} {...noteTombstones[view.reason]} />
-{:else if view.kind === 'ready'}
-	{@const note = view.note}
-	<form class="card ready" onsubmit={reveal}>
-		<Logo size={44} />
-		<div class="ready-text">
-			<h1>Someone sent you a secret</h1>
-			<p class="hint">
-				{#if note.viewsLeft === 1}
-					It burns as soon as you open it.
+<section class="rt-section">
+	{#if view.kind === 'gone'}
+		<Tombstone burnedAt={view.burnedAt} {...noteTombstones[view.reason]} />
+	{:else}
+		<div class="rt-split rt-split--top">
+			{#if view.kind === 'loading'}
+				<StatusCard loading>
+					<p class="hint">Looking for your note…</p>
+				</StatusCard>
+			{:else if view.kind === 'invalid'}
+				<StatusCard title="This link is incomplete">
+					<p class="hint">
+						The part after the <code>#</code> is missing or damaged. Make sure you copied the whole link.
+					</p>
+				</StatusCard>
+				<Gouda mood="panik">Half a link is like half a cheese. Nobody wants that.</Gouda>
+			{:else if view.kind === 'ready'}
+				{@const note = view.note}
+				<form class="rt-panel ready" onsubmit={reveal}>
+					<div class="rt-section-head">
+						<p class="label kicker">Incoming</p>
+						<h1 class="h2">Someone sent you a secret</h1>
+						<p class="hint">
+							{#if note.viewsLeft === 1}
+								It burns as soon as you open it.
+							{:else}
+								It can be opened {plural(note.viewsLeft, 'more time', 'more times')}.
+							{/if}
+							It expires {formatRelative(note.expiresAt)} ({formatDate(note.expiresAt)}).
+						</p>
+					</div>
+
+					{#if note.hasPassword}
+						<div>
+							<label class="label field-label" for="password"
+								>This note is protected by a password</label
+							>
+							<input
+								id="password"
+								class="input"
+								type="password"
+								autocomplete="off"
+								bind:value={password}
+								aria-invalid={passwordError !== null}
+								aria-describedby={passwordError ? 'password-error' : undefined}
+							/>
+						</div>
+					{/if}
+
+					{#if passwordError}
+						<p id="password-error" class="error" role="alert">{passwordError}</p>
+					{/if}
+
+					<button
+						type="submit"
+						class="rt-btn rt-btn--primary rt-btn--md rt-btn--block rt-glitch"
+						data-text="Reveal note"
+						disabled={busy || (note.hasPassword && password === '')}
+					>
+						{#if busy}
+							<span class="busy-cursor" aria-hidden="true"></span>
+							Decrypting…
+						{:else}
+							Reveal note
+						{/if}
+					</button>
+					<p class="hint">
+						Only reveal it when you're ready. Make sure nobody is looking at your screen.
+					</p>
+				</form>
+				<Gouda mood="frech">Psst. I'll keep watch while you read.</Gouda>
+			{:else if view.kind === 'revealed'}
+				<RevealedSecret text={view.text} burned={view.viewsLeft === 0}>
+					{#if view.viewsLeft === 0}
+						This note has now burned. Copy what you need before you leave this page. Once you close
+						it, the note is gone.
+					{:else}
+						It can be opened {plural(view.viewsLeft, 'more time', 'more times')} before it burns.
+					{/if}
+				</RevealedSecret>
+				{#if view.viewsLeft === 0}
+					<Gouda mood="panik">It's going up in flames! Grab what you need, quick.</Gouda>
 				{:else}
-					It can be opened {plural(note.viewsLeft, 'more time', 'more times')}.
+					<Gouda mood="zufrieden">Still in one piece. I didn't even sniff at it.</Gouda>
 				{/if}
-				It expires {formatRelative(note.expiresAt)} ({formatDate(note.expiresAt)}).
-			</p>
-		</div>
-
-		{#if note.hasPassword}
-			<div>
-				<label class="label" for="password">This note is protected by a password</label>
-				<input
-					id="password"
-					class="input"
-					type="password"
-					autocomplete="off"
-					bind:value={password}
-					aria-invalid={passwordError !== null}
-					aria-describedby={passwordError ? 'password-error' : undefined}
-				/>
-			</div>
-		{/if}
-
-		{#if passwordError}
-			<p id="password-error" class="error" role="alert">{passwordError}</p>
-		{/if}
-
-		<button
-			type="submit"
-			class="btn btn-primary btn-block"
-			disabled={busy || (note.hasPassword && password === '')}
-		>
-			{#if busy}
-				<span class="spinner" aria-hidden="true"></span>
-				Decrypting…
+			{:else if view.kind === 'closed'}
+				<StatusCard title="The note was cleared">
+					<p class="hint">You left the page, so the decrypted note was removed from it.</p>
+				</StatusCard>
+				<Gouda mood="zufrieden">Swept clean. Not a crumb left on the screen.</Gouda>
 			{:else}
-				Reveal note
+				<StatusCard title="Something went wrong">
+					<p class="error" role="alert">{view.message}</p>
+					<button
+						type="button"
+						class="rt-btn rt-btn--secondary rt-btn--md"
+						onclick={() => location.reload()}>Try again</button
+					>
+				</StatusCard>
+				<Gouda mood="panik">That wasn't me. Probably.</Gouda>
 			{/if}
-		</button>
-		<p class="hint">
-			Only reveal it when you're ready. Make sure nobody is looking at your screen.
-		</p>
-	</form>
-{:else if view.kind === 'revealed'}
-	<RevealedSecret text={view.text} burned={view.viewsLeft === 0}>
-		{#if view.viewsLeft === 0}
-			This note has now burned. Copy what you need before you leave this page. Once you close it,
-			the note is gone.
-		{:else}
-			It can be opened {plural(view.viewsLeft, 'more time', 'more times')} before it burns.
-		{/if}
-	</RevealedSecret>
-{:else if view.kind === 'closed'}
-	<StatusCard title="The note was cleared">
-		<p class="hint">You left the page, so the decrypted note was removed from it.</p>
-	</StatusCard>
-{:else}
-	<StatusCard title="Something went wrong">
-		<p class="error" role="alert">{view.message}</p>
-		<button type="button" class="btn" onclick={() => location.reload()}>Try again</button>
-	</StatusCard>
-{/if}
+		</div>
+	{/if}
+</section>
 
 <style>
-	h1 {
-		font-size: 28px;
-	}
-
-	code {
-		font-family: var(--font-mono);
-		color: var(--ember-text);
-	}
-
 	.ready {
-		display: grid;
-		gap: 20px;
+		gap: var(--space-6);
 	}
 
-	.ready-text {
-		display: grid;
-		gap: 8px;
+	.kicker {
+		color: var(--slime);
 	}
 </style>

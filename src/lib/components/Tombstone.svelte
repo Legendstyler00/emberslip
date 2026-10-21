@@ -28,51 +28,64 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { formatDate } from '../client/format';
-	import Logo from './Logo.svelte';
+	import Gouda from './Gouda.svelte';
+	import Terminal from './Terminal.svelte';
 
 	let {
 		title,
 		body,
-		burnedAt = null
-	}: { title: string; body: string; burnedAt?: number | null } = $props();
+		burnedAt = null,
+		quip = 'I swear it was here a second ago!'
+	}: { title: string; body: string; burnedAt?: number | null; quip?: string } = $props();
 </script>
 
-<section class="card tombstone" aria-labelledby="tombstone-title">
-	<Logo size={40} lit={false} />
-	<h1 id="tombstone-title">{title}</h1>
-	{#if burnedAt !== null}
-		<p class="when">Burned {formatDate(burnedAt)}</p>
-	{/if}
-	<p class="body">{body}</p>
-	<a class="btn" href={resolve('/')}>Create a note of your own</a>
-</section>
+<!-- Laid out like the 404 page of ratte.lol. -->
+<div class="rt-split rt-split--top">
+	<section class="rt-panel tombstone" aria-labelledby="tombstone-title">
+		<h1 id="tombstone-title" class="h2">{title}</h1>
+		{#if burnedAt !== null}
+			<p class="meta when">Burned {formatDate(burnedAt)}</p>
+		{/if}
+		<p class="body">{body}</p>
+		<a
+			class="rt-btn rt-btn--primary rt-btn--md rt-glitch"
+			data-text="Create a note of your own"
+			href={resolve('/')}><span class="rt-btn-label">Create a note of your own</span></a
+		>
+	</section>
+
+	<div class="aside">
+		<Terminal
+			lines={[{ text: 'cat ./note' }, { kind: 'err', text: 'nothing left but ash' }]}
+			cursor
+		/>
+		<Gouda mood="panik">{quip}</Gouda>
+	</div>
+</div>
 
 <style>
 	.tombstone {
-		display: grid;
-		justify-items: center;
-		gap: 12px;
-		text-align: center;
-		padding-block: 36px;
-		background:
-			radial-gradient(400px 160px at 50% 0, rgb(139 133 128 / 0.12), transparent 70%),
-			var(--surface);
-	}
-
-	h1 {
-		font-size: 28px;
-		margin-top: 6px;
+		gap: var(--space-4);
+		align-content: start;
 	}
 
 	.when {
-		color: var(--ash);
-		font-size: 14px;
-		font-weight: 550;
+		color: var(--alarm);
 	}
 
 	.body {
-		color: var(--muted);
-		max-width: 46ch;
-		margin-bottom: 8px;
+		color: var(--ink-muted);
+		max-width: 52ch;
+	}
+
+	.rt-btn {
+		justify-self: start;
+		margin-top: var(--space-2);
+	}
+
+	.aside {
+		display: grid;
+		gap: var(--space-6);
+		align-content: start;
 	}
 </style>

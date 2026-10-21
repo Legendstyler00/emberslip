@@ -231,6 +231,7 @@ code {
 	content: '[!!] ' / '';
 	font-family: var(--font-mono);
 	font-stretch: var(--font-mono-stretch);
+	font-size: 0.8em;
 	font-weight: 700;
 }
 

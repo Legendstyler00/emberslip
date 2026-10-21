@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Terminal from './Terminal.svelte';
 
 	let {
 		title,
@@ -8,30 +9,27 @@
 	}: { title?: string; loading?: boolean; children?: Snippet } = $props();
 </script>
 
-<section class="card status" aria-busy={loading}>
+<section class="rt-panel status" aria-busy={loading}>
 	{#if loading}
-		<span class="spinner" aria-hidden="true"></span>
+		<Terminal cursor />
 	{/if}
 	{#if title}
-		<h1>{title}</h1>
+		<h1 class="h2">{title}</h1>
 	{/if}
 	{@render children?.()}
 </section>
 
 <style>
 	.status {
-		display: grid;
-		justify-items: center;
-		gap: 14px;
-		text-align: center;
-		padding-block: 36px;
-	}
-
-	h1 {
-		font-size: 28px;
+		gap: var(--space-4);
+		align-content: start;
 	}
 
 	.status :global(p) {
-		max-width: 48ch;
+		max-width: 52ch;
+	}
+
+	.status :global(.rt-btn) {
+		justify-self: start;
 	}
 </style>
