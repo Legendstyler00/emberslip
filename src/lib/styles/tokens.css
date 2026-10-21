@@ -1,0 +1,157 @@
+/*
+ * Design tokens of ratte.lol: the dark "kanal" theme is the default, the light
+ * "tageslicht" theme is switched on with data-theme on <html> (see static/theme-init.js).
+ * The values are copied from the ratte.lol stylesheet; keep them in sync with it.
+ */
+
+:root,
+[data-theme='kanal'] {
+	color-scheme: dark;
+	--surface: #0e1210;
+	--surface-raised: #151c18;
+	--surface-sunken: #090c0a;
+	--line: #26302b;
+	--line-strong: #5b6e63;
+	--ink: #e4f0e7;
+	--ink-muted: #9cb0a3;
+	--slime: #7cf27c;
+	--slime-soft: #11301a;
+	--on-slime: #08140b;
+	--magenta: #ff4fd8;
+	--magenta-soft: #3a0d33;
+	--on-magenta: #1a0516;
+	--cyan: #4fe3ff;
+	--cyan-soft: #0b2d35;
+	--cheese: #f2c14e;
+	--cheese-soft: #33280c;
+	--on-cheese: #1f1600;
+	--alarm: #ff7a59;
+	--alarm-soft: #3b170e;
+	--link: var(--cyan);
+	--focus: var(--cheese);
+	--scanline: #00000047;
+	--vignette: #000000b3;
+	--rgb-split-a: #ff4fd8a6;
+	--rgb-split-b: #4fe3ffa6;
+	--glow-text: #7cf27c73;
+	--screen: #0a0e0c;
+	--screen-ink: #d3ecd9;
+	--screen-muted: #86a092;
+	--screen-prompt: #7cf27c;
+	--screen-alarm: #ff7a59;
+	--screen-line: #26302b;
+	--shadow-card: 0 0 0 1px #26302b, 0 12px 32px #000000a6;
+	--glow-slime: 0 0 0 1px #7cf27c, 0 0 22px #7cf27c59;
+	--glow-magenta: 0 0 0 1px #ff4fd8, 0 0 22px #ff4fd859;
+	--rgb-offset: -3px 0 0 #ff4fd8, 3px 0 0 #4fe3ff;
+	--focus-ring: 0 0 0 2px #0e1210, 0 0 0 4px #f2c14e;
+}
+[data-theme='tageslicht'] {
+	color-scheme: light;
+	--surface: #eef2ec;
+	--surface-raised: #fff;
+	--surface-sunken: #e1e8df;
+	--line: #cbd5cd;
+	--line-strong: #76887d;
+	--ink: #0e1210;
+	--ink-muted: #48584f;
+	--slime: #19722f;
+	--slime-soft: #d3f3d6;
+	--on-slime: #fff;
+	--magenta: #b0128d;
+	--magenta-soft: #fbe1f4;
+	--on-magenta: #fff;
+	--cyan: #006b84;
+	--cyan-soft: #d5f3fa;
+	--cheese: #8a5c00;
+	--cheese-soft: #fbe8b4;
+	--on-cheese: #fff;
+	--alarm: #b93815;
+	--alarm-soft: #fde3da;
+	--link: var(--cyan);
+	--focus: var(--magenta);
+	--scanline: #0e121012;
+	--vignette: #0e121024;
+	--rgb-split-a: #b0128d4d;
+	--rgb-split-b: #006b844d;
+	--glow-text: #19722f00;
+	--screen: #0a0e0c;
+	--screen-ink: #d3ecd9;
+	--screen-muted: #86a092;
+	--screen-prompt: #7cf27c;
+	--screen-alarm: #ff7a59;
+	--screen-line: #26302b;
+	--shadow-card: 0 1px 2px #0e12101a, 0 10px 28px #0e12101f;
+	--glow-slime: 0 0 0 1px #19722f, 0 6px 18px #19722f33;
+	--glow-magenta: 0 0 0 1px #b0128d, 0 6px 18px #b0128d33;
+	--rgb-offset: -3px 0 0 #b0128d, 3px 0 0 #006b84;
+	--focus-ring: 0 0 0 2px #eef2ec, 0 0 0 4px #b0128d;
+}
+:root {
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-12: 48px;
+	--space-16: 64px;
+	--radius-0: 0px;
+	--radius-sm: 4px;
+	--radius-md: 10px;
+	--radius-lg: 20px;
+	--radius-full: 9999px;
+	--content-max: 1120px;
+	--measure: 68ch;
+	--nav-height: 64px;
+	--bp-desktop: 960px;
+	--font-sans:
+		'Bricolage Grotesque Variable', 'Bricolage Grotesque Fallback', 'Arial Nova', 'Segoe UI',
+		system-ui, sans-serif;
+	--font-mono:
+		'Martian Mono Variable', 'Martian Mono Fallback', 'Cascadia Mono', 'JetBrains Mono',
+		ui-monospace, Menlo, Consolas, monospace;
+	/* Martian Mono's semi-expanded width, as on ratte.lol. The font shorthand resets
+	   font-stretch, so the mono type tokens below carry the keyword themselves. */
+	--font-mono-stretch: 112.5%;
+	--type-display: 800 64px/60px var(--font-sans);
+	--type-display-tracking: -0.03em;
+	--type-h1: 800 44px/46px var(--font-sans);
+	--type-h1-tracking: -0.02em;
+	--type-h2: 700 30px/34px var(--font-sans);
+	--type-h2-tracking: -0.01em;
+	--type-h3: 700 21px/26px var(--font-sans);
+	--type-body-lg: 400 19px/30px var(--font-sans);
+	--type-body: 400 17px/27px var(--font-sans);
+	--type-body-sm: 400 15px/23px var(--font-sans);
+	--type-label: 600 semi-expanded 12px/16px var(--font-mono);
+	--type-label-tracking: 0.08em;
+	--type-meta: 400 semi-expanded 12px/18px var(--font-mono);
+	--type-code: 400 semi-expanded 14px/22px var(--font-mono);
+}
+@media (width<=959.98px) {
+	:root {
+		--type-display: 800 48px/48px var(--font-sans);
+		--type-h1: 800 34px/38px var(--font-sans);
+		--type-h2: 700 26px/30px var(--font-sans);
+	}
+}
+
+@font-face {
+	font-family: Bricolage Grotesque Fallback;
+	src: local(Arial), local(ArialMT), local(Liberation Sans), local(LiberationSans);
+	size-adjust: 103.75%;
+	ascent-override: 89.64%;
+	descent-override: 26.02%;
+	line-gap-override: 0%;
+}
+@font-face {
+	font-family: Martian Mono Fallback;
+	src:
+		local(Menlo), local(Menlo-Regular), local(Courier New), local(CourierNewPSMT),
+		local(Liberation Mono), local(LiberationMono);
+	size-adjust: 124.98%;
+	ascent-override: 80.01%;
+	descent-override: 16%;
+	line-gap-override: 0%;
+}

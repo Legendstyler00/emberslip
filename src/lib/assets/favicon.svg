@@ -1,18 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-	<defs>
-		<linearGradient id="f" x1="0" y1="1" x2="0" y2="0">
-			<stop offset="0" stop-color="#ff6a1f" />
-			<stop offset="1" stop-color="#ffc35a" />
-		</linearGradient>
-	</defs>
-	<rect width="32" height="32" rx="8" fill="#1c1815" />
-	<path
-		fill="url(#f)"
-		d="M16 4.5c.8 4 3.3 6 5.3 8.2 1.9 2.1 3.2 4.3 3.2 7.2 0 4.7-3.8 8.6-8.5 8.6s-8.5-3.9-8.5-8.6c0-2.8 1.2-5 3-6.6.3 1.9 1.3 3.2 2.7 3.9-.4-4.4 1.1-8.6 2.8-12.7z"
-	/>
-	<path
-		fill="#1c1815"
-		opacity=".55"
-		d="M16 17.2c.5 1.7 1.7 2.6 2.4 3.6.6.8 1 1.6 1 2.6a3.4 3.4 0 0 1-6.8 0c0-2 1.3-3.5 3.4-6.2z"
-	/>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" shape-rendering="crispEdges">
+	<title>Emberslip</title>
+	<path fill="#0a0e0c" stroke="#7cf27c" stroke-width="12" d="M6 6h244v244H6z" />
+	<path fill="#ff7a59" d="M122 40h11v11h-11zM111 51h22v11h-22zM111 62h33v11h-33zM100 73h44v11h-44zM100 84h55v11h-55zM89 95h66v11h-66zM177 95h11v11h-11zM89 106h77v11h-77zM177 106h11v11h-11zM78 117h110v11h-110zM67 128h121v11h-121zM67 139h132v11h-132zM56 150h143v11h-143zM56 161h143v11h-143zM56 172h143v11h-143zM67 183h121v11h-121zM78 194h99v11h-99zM100 205h55v11h-55z" />
+	<path fill="#f2c14e" d="M122 128h11v11h-11zM111 139h22v11h-22zM111 150h33v11h-33zM100 161h44v11h-44zM100 172h55v11h-55zM100 183h55v11h-55zM111 194h33v11h-33z" />
 </svg>

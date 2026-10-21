@@ -11,21 +11,21 @@
 	}
 </script>
 
-<section class="card result" aria-labelledby="result-title">
-	<div>
-		<p class="eyebrow">Ready to share</p>
+<section class="rt-panel result" aria-labelledby="result-title">
+	<div class="rt-section-head">
+		<p class="label kicker">Ready to share</p>
 		<h2 id="result-title">Your secret link</h2>
 	</div>
 
 	<div class="link-row">
 		<label class="visually-hidden" for="link">Secret link</label>
-		<input id="link" class="input link" readonly value={note.link} onfocus={selectAll} />
-		<CopyButton text={note.link} label="Copy link" />
+		<input id="link" class="input input--mono" readonly value={note.link} onfocus={selectAll} />
+		<CopyButton text={note.link} label="Copy link" primary />
 	</div>
 
 	<LinkQr link={note.link} label="QR code of the secret link" />
 
-	<ul class="facts">
+	<ul class="rt-facts">
 		<li>
 			Burns after <strong>{plural(note.views, 'view', 'views')}</strong>
 		</li>
@@ -46,7 +46,7 @@
 	{/if}
 
 	{#if note.manageLink}
-		<div class="manage">
+		<div class="private">
 			<h3>Your private status link</h3>
 			<p class="hint">
 				Keep this one to yourself. It shows when the note was opened and lets you burn it early, but
@@ -56,7 +56,7 @@
 				<label class="visually-hidden" for="manage-link">Status link</label>
 				<input
 					id="manage-link"
-					class="input link"
+					class="input input--mono"
 					readonly
 					value={note.manageLink}
 					onfocus={selectAll}
@@ -76,81 +76,42 @@
 		{/if}
 	</p>
 
-	<button type="button" class="btn btn-block" onclick={onreset}>Create another note</button>
+	<button type="button" class="rt-btn rt-btn--secondary rt-btn--md rt-btn--block" onclick={onreset}
+		>Create another note</button
+	>
 </section>
 
 <style>
-	.result {
-		display: grid;
-		gap: 20px;
-	}
-
-	h2 {
-		font-size: 26px;
-		margin-top: 4px;
+	.kicker {
+		color: var(--slime);
 	}
 
 	.link-row {
 		display: flex;
-		gap: 8px;
+		gap: var(--space-2);
 	}
 
-	.link {
-		font-family: var(--font-mono);
-		font-size: 14px;
+	.link-row .input {
 		min-width: 0;
 	}
 
-	@media (max-width: 520px) {
+	@media (width<=959.98px) {
 		.link-row {
 			flex-direction: column;
 		}
 	}
 
-	.facts {
+	/* Only for the person who made the note: framed like Gouda's speech bubble. */
+	.private {
 		display: grid;
-		gap: 6px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.facts li {
-		padding-left: 22px;
-		position: relative;
-	}
-
-	.facts li::before {
-		content: '';
-		position: absolute;
-		left: 4px;
-		top: 0.62em;
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: linear-gradient(135deg, var(--ember), var(--ember-2));
-	}
-
-	.manage {
-		display: grid;
-		gap: 10px;
-		padding: 18px;
-		border: 1px solid rgb(255 122 47 / 0.45);
-		border-radius: var(--radius-sm);
-		background: var(--surface-2);
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--surface-sunken);
+		border: 2px solid var(--magenta);
+		border-radius: var(--radius-md);
 	}
 
 	h3 {
-		font-family: var(--font-sans);
-		font-size: 16px;
-		font-weight: 650;
-	}
-
-	.notice {
-		border-left: 3px solid var(--ember);
-		background: var(--surface-2);
-		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-		padding: 10px 14px;
-		font-size: 15px;
+		color: var(--magenta);
 	}
 </style>

@@ -20,6 +20,7 @@
 	} from '../crypto/note';
 	import { createNote } from '../client/api';
 	import Segmented from './Segmented.svelte';
+	import Terminal from './Terminal.svelte';
 
 	let { oncreated }: { oncreated: (note: CreatedNote) => void } = $props();
 
@@ -76,20 +77,22 @@
 	}
 </script>
 
-<form class="card form" onsubmit={submit}>
+<form class="rt-panel form" onsubmit={submit}>
 	<div>
-		<label class="label" for="note">Your secret</label>
-		<textarea
-			id="note"
-			class="textarea"
-			rows="7"
-			placeholder="Paste a password, an API key, or anything else that shouldn't linger in chat history."
-			autocomplete="off"
-			autocapitalize="off"
-			spellcheck="false"
-			bind:value={text}
-			aria-invalid={tooLong}
-			aria-describedby={tooLong ? 'note-too-long' : undefined}></textarea>
+		<label class="label field-label" for="note">Your secret</label>
+		<Terminal title="gouda@kanal: ~/new-note">
+			<textarea
+				id="note"
+				class="textarea"
+				rows="7"
+				placeholder="Paste a password, an API key, or anything else that shouldn't linger in chat history."
+				autocomplete="off"
+				autocapitalize="off"
+				spellcheck="false"
+				bind:value={text}
+				aria-invalid={tooLong}
+				aria-describedby={tooLong ? 'note-too-long' : undefined}></textarea>
+		</Terminal>
 		{#if tooLong}
 			<p id="note-too-long" class="error">This note is too long. Notes can be up to about 64 KB.</p>
 		{/if}
@@ -110,9 +113,9 @@
 		/>
 	</div>
 
-	<div class="password">
-		<label class="toggle">
-			<input type="checkbox" bind:checked={usePassword} />
+	<div class="option">
+		<label class="rt-check-row">
+			<input type="checkbox" class="rt-check" bind:checked={usePassword} />
 			Protect with a password
 		</label>
 		{#if usePassword}
@@ -126,7 +129,11 @@
 					placeholder="Password"
 					bind:value={password}
 				/>
-				<button type="button" class="btn" onclick={() => (showPassword = !showPassword)}>
+				<button
+					type="button"
+					class="rt-btn rt-btn--secondary rt-btn--md"
+					onclick={() => (showPassword = !showPassword)}
+				>
 					{showPassword ? 'Hide' : 'Show'}
 				</button>
 			</div>
@@ -137,9 +144,14 @@
 		{/if}
 	</div>
 
-	<div class="status-link">
-		<label class="toggle">
-			<input type="checkbox" bind:checked={wantStatusLink} aria-describedby="status-link-hint" />
+	<div class="option">
+		<label class="rt-check-row">
+			<input
+				type="checkbox"
+				class="rt-check"
+				bind:checked={wantStatusLink}
+				aria-describedby="status-link-hint"
+			/>
 			Give me a private status link
 		</label>
 		<p id="status-link-hint" class="hint">
@@ -152,56 +164,52 @@
 		<p class="error" role="alert">{error}</p>
 	{/if}
 
-	<button type="submit" class="btn btn-primary btn-block" disabled={!canSubmit}>
-		{#if busy}
-			<span class="spinner" aria-hidden="true"></span>
-			{usePassword ? 'Encrypting with your password…' : 'Encrypting…'}
-		{:else}
-			Create secret link
-		{/if}
-	</button>
-	<p class="hint center">Encrypted in your browser before it's sent. We never see the key.</p>
+	<div class="submit">
+		<button
+			type="submit"
+			class="rt-btn rt-btn--primary rt-btn--md rt-btn--block rt-glitch"
+			data-text="Create secret link"
+			disabled={!canSubmit}
+		>
+			{#if busy}
+				<span class="busy-cursor" aria-hidden="true"></span>
+				{usePassword ? 'Encrypting with your password…' : 'Encrypting…'}
+			{:else}
+				Create secret link
+			{/if}
+		</button>
+		<p class="hint">Encrypted in your browser before it's sent. We never see the key.</p>
+	</div>
 </form>
 
 <style>
 	.form {
-		display: grid;
-		gap: 22px;
+		gap: var(--space-6);
 	}
 
 	.options {
 		display: grid;
-		gap: 18px;
+		gap: var(--space-4);
 	}
 
-	.password,
-	.status-link {
+	.option,
+	.submit {
 		display: grid;
-		gap: 10px;
+		gap: var(--space-2);
 	}
 
-	.toggle {
-		display: inline-flex;
-		align-items: center;
-		gap: 10px;
-		font-size: 15px;
-		font-weight: 550;
-		cursor: pointer;
+	.rt-check-row {
 		width: fit-content;
-	}
-
-	.toggle input {
-		width: 18px;
-		height: 18px;
-		accent-color: var(--ember);
 	}
 
 	.password-row {
 		display: flex;
-		gap: 8px;
+		gap: var(--space-2);
+		margin-top: var(--space-2);
 	}
 
-	.center {
+	.submit {
+		gap: var(--space-3);
 		text-align: center;
 	}
 </style>

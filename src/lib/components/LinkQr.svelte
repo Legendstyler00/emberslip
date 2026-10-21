@@ -8,7 +8,12 @@
 </script>
 
 <div class="link-qr">
-	<button type="button" class="btn toggle" aria-expanded={open} onclick={() => (open = !open)}>
+	<button
+		type="button"
+		class="rt-btn rt-btn--secondary rt-btn--sm toggle"
+		aria-expanded={open}
+		onclick={() => (open = !open)}
+	>
 		<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
 			<path
 				d="M2.5 2.5h4v4h-4zM9.5 2.5h4v4h-4zM2.5 9.5h4v4h-4z"
@@ -35,20 +40,20 @@
 <style>
 	.link-qr {
 		display: grid;
-		gap: 14px;
+		gap: var(--space-4);
 	}
 
 	.toggle {
 		justify-self: start;
-		min-height: 38px;
-		padding: 0 14px;
-		font-size: 14px;
 	}
 
 	.panel {
 		display: grid;
 		justify-items: center;
-		gap: 12px;
+		gap: var(--space-3);
+		padding: var(--space-4);
+		background: var(--surface-sunken);
+		border: 1px dashed var(--line-strong);
 		text-align: center;
 	}
 

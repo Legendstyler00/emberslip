@@ -1,23 +1,16 @@
 <script lang="ts">
-	let { size = 28, lit = true }: { size?: number; lit?: boolean } = $props();
-	const uid = $props.id();
-	const id = `flame-${uid}`;
+	let { size = 18 }: { size?: number } = $props();
 </script>
 
-<svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-	<defs>
-		<linearGradient {id} x1="0" y1="1" x2="0" y2="0">
-			<stop offset="0" stop-color={lit ? '#ff6a1f' : '#6f6964'} />
-			<stop offset="1" stop-color={lit ? '#ffc35a' : '#a19a94'} />
-		</linearGradient>
-	</defs>
+<!-- A pixel flame in the colours of ratte.lol. -->
+<svg width={size} height={size} viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
 	<path
-		fill="url(#{id})"
-		d="M16 3c.9 4.4 3.6 6.6 5.8 9 2.1 2.3 3.6 4.7 3.6 7.9 0 5.2-4.2 9.4-9.4 9.4s-9.4-4.2-9.4-9.4c0-3.1 1.3-5.5 3.3-7.3.3 2.1 1.4 3.5 3 4.3-.5-4.8 1.2-9.4 3.1-13.9z"
+		class="flame"
+		d="M8 0h1v1h-1zM7 1h2v1h-2zM7 2h3v1h-3zM6 3h4v1h-4zM6 4h5v1h-5zM5 5h6v1h-6zM13 5h1v1h-1zM5 6h7v1h-7zM13 6h1v1h-1zM4 7h10v1h-10zM3 8h11v1h-11zM3 9h12v1h-12zM2 10h13v1h-13zM2 11h13v1h-13zM2 12h13v1h-13zM3 13h11v1h-11zM4 14h9v1h-9zM6 15h5v1h-5z"
 	/>
 	<path
 		class="core"
-		d="M16 17c.6 1.9 1.9 2.9 2.7 4 .7.9 1.1 1.8 1.1 2.9a3.8 3.8 0 0 1-7.6 0c0-2.2 1.4-3.9 3.8-6.9z"
+		d="M8 8h1v1h-1zM7 9h2v1h-2zM7 10h3v1h-3zM6 11h4v1h-4zM6 12h5v1h-5zM6 13h5v1h-5zM7 14h3v1h-3z"
 	/>
 </svg>
 
@@ -27,8 +20,11 @@
 		display: block;
 	}
 
+	.flame {
+		fill: var(--alarm);
+	}
+
 	.core {
-		fill: var(--bg);
-		opacity: 0.55;
+		fill: var(--cheese);
 	}
 </style>

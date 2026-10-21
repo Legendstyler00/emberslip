@@ -1,4 +1,4 @@
-<!-- Decorative embers rising off the edge of a burned note. -->
+<!-- Decorative pixel sparks rising off the edge of a burned note. -->
 <div class="embers" aria-hidden="true">
 	{#each { length: 18 }}
 		<span></span>
@@ -19,11 +19,10 @@
 		bottom: -6px;
 		width: 5px;
 		height: 5px;
-		border-radius: 50%;
-		background: var(--ember-2);
-		box-shadow:
-			0 0 6px 2px var(--ember),
-			0 0 14px 4px rgb(255 122 47 / 0.35);
+		/* Light-emitting colours, the same in both modes: the screen alarm and the dark-mode
+		   cheese and magenta of ratte.lol. */
+		background: #f2c14e;
+		box-shadow: 0 0 8px 2px #ff7a59;
 		opacity: 0;
 		animation: rise 2.6s ease-out forwards;
 	}
@@ -136,7 +135,13 @@
 	span:nth-child(3n) {
 		width: 3px;
 		height: 3px;
+		background: #ff7a59;
 		animation-duration: 2.1s;
+	}
+
+	span:nth-child(5n) {
+		background: #ff4fd8;
+		box-shadow: 0 0 8px 2px #ff4fd8;
 	}
 
 	span:nth-child(4n) {
