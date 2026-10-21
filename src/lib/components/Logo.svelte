@@ -1,16 +1,9 @@
 <script lang="ts">
-	let { size = 18, lit = true }: { size?: number; lit?: boolean } = $props();
+	let { size = 18 }: { size?: number } = $props();
 </script>
 
 <!-- A pixel flame in the colours of ratte.lol. -->
-<svg
-	class:ash={!lit}
-	width={size}
-	height={size}
-	viewBox="0 0 16 16"
-	shape-rendering="crispEdges"
-	aria-hidden="true"
->
+<svg width={size} height={size} viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
 	<path
 		class="flame"
 		d="M8 0h1v1h-1zM7 1h2v1h-2zM7 2h3v1h-3zM6 3h4v1h-4zM6 4h5v1h-5zM5 5h6v1h-6zM13 5h1v1h-1zM5 6h7v1h-7zM13 6h1v1h-1zM4 7h10v1h-10zM3 8h11v1h-11zM3 9h12v1h-12zM2 10h13v1h-13zM2 11h13v1h-13zM2 12h13v1h-13zM3 13h11v1h-11zM4 14h9v1h-9zM6 15h5v1h-5z"
@@ -33,13 +26,5 @@
 
 	.core {
 		fill: var(--cheese);
-	}
-
-	.ash .flame {
-		fill: var(--line-strong);
-	}
-
-	.ash .core {
-		fill: var(--ink-muted);
 	}
 </style>

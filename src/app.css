@@ -85,8 +85,7 @@ code {
 
 /* A raised panel in the look of rt-card, but without its hover lift and width limit, so
    forms don't jump around and nothing moves underneath a QR code. */
-.rt-panel,
-.card {
+.rt-panel {
 	display: grid;
 	gap: var(--space-6);
 	min-width: 0;
@@ -99,8 +98,7 @@ code {
 }
 
 @media (width<=959.98px) {
-	.rt-panel,
-	.card {
+	.rt-panel {
 		padding: var(--space-4);
 	}
 }
@@ -273,8 +271,7 @@ code {
 
 /* Buttons beyond the ratte.lol set */
 
-.rt-btn--block,
-.btn-block {
+.rt-btn--block {
 	width: 100%;
 	height: auto;
 	min-height: 44px;
@@ -303,8 +300,7 @@ code {
 }
 
 /* The terminal cursor stands in for a spinner. */
-.busy-cursor,
-.spinner {
+.busy-cursor {
 	display: inline-block;
 	flex: none;
 	width: 0.6em;
@@ -321,79 +317,6 @@ code {
 	overflow: hidden;
 	clip-path: inset(50%);
 	white-space: nowrap;
-}
-
-/* Legacy tokens and class names, kept until every component uses the ones above. */
-
-:root {
-	--bg: var(--surface);
-	--surface-2: var(--surface-sunken);
-	--border: var(--line);
-	--border-strong: var(--line-strong);
-	--text: var(--ink);
-	--muted: var(--ink-muted);
-	--faint: var(--ink-muted);
-	--ember: var(--alarm);
-	--ember-2: var(--cheese);
-	--ember-text: var(--alarm);
-	--on-ember: var(--on-alarm);
-	--ash: var(--ink-muted);
-	--danger: var(--alarm);
-	--danger-bg: var(--alarm-soft);
-	--radius: var(--radius-md);
-	--shadow: var(--shadow-card);
-	--font-display: var(--font-sans);
-}
-
-.btn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: var(--space-2);
-	min-height: 44px;
-	padding: 0 var(--space-4);
-	border: 2px solid var(--line-strong);
-	border-radius: var(--radius-sm);
-	background: none;
-	color: var(--ink);
-	font-family: var(--font-mono);
-	font-stretch: var(--font-mono-stretch);
-	font-size: 13px;
-	font-weight: 600;
-	letter-spacing: 0.02em;
-	text-decoration: none;
-	cursor: pointer;
-}
-
-.btn:disabled {
-	opacity: 0.45;
-	cursor: not-allowed;
-}
-
-.btn-primary {
-	border-color: var(--slime);
-	background: var(--slime);
-	color: var(--on-slime);
-}
-
-.eyebrow {
-	color: var(--slime);
-	font: var(--type-label);
-	letter-spacing: var(--type-label-tracking);
-	text-transform: uppercase;
-}
-
-.prose {
-	display: grid;
-	gap: var(--space-4);
-}
-
-.prose ol,
-.prose ul {
-	display: grid;
-	gap: var(--space-2);
-	margin: 0;
-	padding-left: var(--space-6);
 }
 
 @media (prefers-reduced-motion: reduce) {
