@@ -89,3 +89,4 @@ Status links are opt-in. Without one, a note stores no open times.
 - Don't back up the database or take filesystem snapshots of it.
 - Don't enable access logs in the reverse proxy.
 - The application keeps client IP addresses only in memory, as keyed hashes, for rate limiting.
+  IPv6 addresses count per /64, since a single subscriber usually has a whole /64.

@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { checkpoint, openDatabase } from './db';
+import { checkpoint, databaseSize, openDatabase } from './db';
 import { hashToken, NoteStore, type NewNote } from './notes';
 
 const limits = { maxPasswordAttempts: 5, tombstoneSeconds: 30 * 86400, maxDbBytes: 1024 ** 3 };
@@ -247,6 +247,21 @@ describe('NoteStore', () => {
 	it('refuses new notes when the database is full', () => {
 		const tiny = new NoteStore(openDatabase(':memory:'), { ...limits, maxDbBytes: 1 });
 		expect(tiny.create(newNote())).toBe('full');
+	});
+
+	it('accepts new notes again once burned notes have freed their space', () => {
+		const db = openDatabase(':memory:');
+		const notes = Array.from({ length: 100 }, () =>
+			newNote({ ciphertext: randomBytes(16 * 1024 + 16) })
+		);
+		const filler = new NoteStore(db, limits);
+		for (const note of notes) filler.create(note);
+
+		const local = new NoteStore(db, { ...limits, maxDbBytes: databaseSize(db) });
+		expect(local.create(newNote())).toBe('full');
+
+		for (const note of notes) local.open(note.id, null, T0);
+		expect(local.create(newNote())).toBe('created');
 	});
 
 	it('leaves no trace of burned ciphertext in the database files', () => {

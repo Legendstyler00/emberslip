@@ -84,10 +84,14 @@ export function transaction<T>(db: DatabaseSync, fn: () => T): T {
 	}
 }
 
+/** Bytes in use. The file never shrinks, so free pages left behind by burned notes don't count. */
 export function databaseSize(db: DatabaseSync): number {
 	const { page_count } = db.prepare('PRAGMA page_count').get() as { page_count: number };
+	const { freelist_count } = db.prepare('PRAGMA freelist_count').get() as {
+		freelist_count: number;
+	};
 	const { page_size } = db.prepare('PRAGMA page_size').get() as { page_size: number };
-	return page_count * page_size;
+	return (page_count - freelist_count) * page_size;
 }
 
 /** Moves WAL content into the main file and truncates the WAL, so burned notes don't linger there. */
